@@ -1,0 +1,67 @@
+## Historia del motor de cálculo (mejoras sobre el Excel original)
+
+El motor de cálculo (`AmortizationDomainService`) partió como una réplica
+literal del Excel y fue evolucionando en capas, cada una manteniendo
+retro-compatibilidad numérica con la anterior:
+
+1. **Tasa en porcentaje y bidireccional** — en el Excel la TEA se captura
+   como fracción (`0.1225`). En el formulario se ingresa como porcentaje
+   (`12.25`), con un segundo campo para la tasa mensual equivalente —
+   editar cualquiera de los dos recalcula el otro automáticamente
+   (`(1+TEA)^(1/12)-1` y su inversa).
+2. **Abonos a capital puntuales** — primera extensión sobre el Excel: un
+   pago extra que el usuario asigna a una cuota específica, adelantando el
+   pago del crédito sin cambiar el valor de la cuota fija.
+3. **Estado del préstamo (Nuevo / En ejecución)** — para un préstamo que ya
+   lleva tiempo corriendo, forzar a reconstruir monto y fecha originales del
+   desembolso es propenso a error. Con `estado = EN_EJECUCION`, los mismos
+   4 parámetros de siempre (monto, tasa, cuotas, fecha) se reinterpretan
+   como el estado actual: saldo pendiente hoy, tasa vigente, cuotas que
+   faltan, fecha de corte. Un campo adicional, `numeroCuotaInicial`, numera
+   la tabla igual que el plan real (ej. empezar en la cuota 15) en vez de
+   reiniciar en 1.
+4. **Simulaciones guardadas** — escenarios "qué pasaría si" con nombre
+   propio sobre un préstamo ya guardado (la "base"). Heredan monto, tasa,
+   plazo, fecha y cuota de la base (no se pueden cambiar ahí) y solo
+   agregan/cambian abonos, para comparar el impacto sin tocar el préstamo
+   original.
+5. **Pago real** — un histórico (ledger) de abonos/cuotas extra que
+   *realmente* se pagaron, cada uno con su fecha real y un concepto libre.
+   A diferencia de una simulación (que se edita como un todo), el pago real
+   se registra evento a evento en el tiempo. Se calcula el plan "real" del
+   préstamo con el mismo motor (abonos base + los realmente ejecutados) y
+   se compara contra la estimación con la misma lógica que las
+   simulaciones (`PlanComparisonService`, compartido entre ambas) — así
+   Estimación, Simulaciones y Pago Real son directamente comparables.
+6. **Moneda por préstamo** — cada préstamo tiene su propio código ISO 4217
+   (COP, USD, EUR, JPY, etc.), de una lista completa de ~160 monedas
+   generada con `Intl.supportedValuesOf('currency')` (no tipeada a mano).
+   El formato de cada monto usa el símbolo y número de decimales correctos
+   según la moneda (ej. JPY sin decimales, USD/COP con 2), tanto en la app
+   como en Excel/PDF.
+7. **Sistema de abonos unificado (refactor mayor)** — reemplazó los
+   antiguos campos fijos "cuota primas" (jun/dic) y "cuota cesantías"
+   (feb), que tenían el mes **hardcodeado en el motor**, por 3 tipos de
+   abono configurables por el usuario, sin meses fijos en el código:
+   - **Puntual**: un monto en una cuota o fecha específica, una sola vez.
+   - **Recurrente**: un monto que se repite cada N meses/años desde una
+     fecha de inicio, indefinidamente o hasta una fecha límite opcional.
+   - **Grupo recurrente**: varios abonos recurrentes agrupados bajo un
+     nombre propio (ej. para recrear "primas cada 6 meses + cesantías cada
+     12 meses" como un solo compromiso, o cualquier otra combinación).
+
+   La resolución fecha→cuota es determinística: cada cuota cae 30 días
+   después de la anterior, así que un abono por fecha o recurrente se
+   aplica en la primera cuota cuya fecha sea igual o posterior a la fecha
+   objetivo. En el préstamo base este conjunto se llama "compromiso cuota
+   extraordinaria"; en una simulación, sus "abonos adicionales" se
+   **suman** al compromiso de la base (no lo reemplazan). Incluye un
+   script de migración (`npm run migrate:primas-cesantias`) para convertir
+   préstamos existentes de la versión anterior.
+8. **Exportar a Excel y PDF** — un botón descarga un `.xlsx` con una hoja
+   "Información" (quién y cuándo generó el reporte), una hoja "Resumen"
+   (datos del crédito + tabla comparativa de todos los planes) y una hoja
+   por cada plan (Estimación, Pago real si existe, cada simulación) con su
+   tabla de amortización completa. El PDF trae el mismo contenido: página
+   de resumen + una o más páginas horizontales por plan con su tabla
+   completa, paginado automáticamente — generados con `exceljs` y `pdfkit`.
