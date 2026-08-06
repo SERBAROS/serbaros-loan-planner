@@ -18,6 +18,23 @@
   --font-display: 'Mohave', 'Source Serif 4', Georgia, serif;
   --font-body: 'Inter', -apple-system, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Ritmo de espaciado — mismo valor en todos los componentes en vez de
+     números sueltos repetidos. */
+  --space-xs: 6px;
+  --space-sm: 10px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  /*
+   * Puntos de quiebre de la app (documentados aquí; los @media no pueden
+   * leer variables CSS en su condición, así que estos valores literales
+   * deben coincidir con los usados en los @media de todo el archivo):
+   *   --bp-mobile: 480px  (mobile puro)
+   *   --bp-ledger:  600px  (el ribbon de intereses pasa a pills)
+   *   --bp-tablet: 860px  (sidebar/topbar colapsan a una columna)
+   */
 }
 
 /* Tema 1: Azul Serbaros — fondo navy profundo, fiel al logo principal */
@@ -130,7 +147,7 @@ a {
 .topbar {
   display: grid;
   grid-template-columns: 300px 1fr;
-  height: 100px;
+  height: 76px;
   border-bottom: 1px solid var(--border-soft);
   background: var(--surface);
   flex: none;
@@ -566,6 +583,19 @@ a {
 /* ---------- Ledger progress ribbon ---------- */
 .ledger-ribbon {
   margin-bottom: 32px;
+  position: relative;
+}
+
+.ledger-ribbon::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 24px;
+  height: 34px;
+  background: linear-gradient(to right, transparent, var(--ink));
+  pointer-events: none;
+  opacity: 0.85;
 }
 
 .ledger-ribbon-label {
@@ -580,10 +610,13 @@ a {
   display: flex;
   gap: 3px;
   height: 34px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
 }
 
 .ledger-year {
-  flex: 1;
+  flex: 0 0 110px;
   position: relative;
   background: var(--surface);
   border: 1px solid var(--border-soft);
@@ -619,16 +652,35 @@ a {
   white-space: nowrap;
 }
 
+.ledger-year-date {
+  display: none;
+}
+
 /* ---------- Table ---------- */
 .table-wrap {
   border: 1px solid var(--border-soft);
   border-radius: 6px;
   overflow: hidden;
+  position: relative;
+}
+
+/* Indicador de que hay más columnas a la derecha (solo visible si la tabla
+   realmente desborda) — un degradado sutil pegado al borde derecho. */
+.table-wrap::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 24px;
+  background: linear-gradient(to right, transparent, var(--surface-raised));
+  pointer-events: none;
+  opacity: 0.9;
 }
 
 .table-scroll {
   max-height: 560px;
-  overflow-y: auto;
+  overflow: auto;
 }
 
 table.amort-table {
@@ -658,6 +710,12 @@ table.amort-table thead th:nth-child(2) {
   text-align: left;
 }
 
+table.amort-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+}
+
 table.amort-table td {
   padding: 8px 14px;
   text-align: right;
@@ -669,6 +727,10 @@ table.amort-table td {
 table.amort-table td:first-child {
   text-align: left;
   color: var(--paper);
+  position: sticky;
+  left: 0;
+  background: var(--surface);
+  z-index: 1;
 }
 
 table.amort-table td:nth-child(2) {
@@ -705,6 +767,114 @@ table.amort-table tbody tr:hover td {
 
 .form-section-title:first-child {
   margin-top: 0;
+}
+
+/* ---------- Acordeón (secciones plegables de formularios y detalle) ---------- */
+.collapsible-section {
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  margin-bottom: var(--space-sm);
+  overflow: hidden;
+}
+
+.collapsible-section-header {
+  width: 100%;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.collapsible-section-header:hover {
+  background: var(--surface-raised);
+}
+
+.collapsible-section-chevron {
+  color: var(--brass);
+  font-size: 12px;
+  transition: transform 0.15s ease;
+  flex: none;
+}
+
+.collapsible-section-chevron.is-open {
+  transform: rotate(90deg);
+}
+
+.collapsible-section-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  color: var(--paper);
+}
+
+.collapsible-section-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.collapsible-section-body {
+  padding: 4px 18px 20px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.collapsible-section-body .form-section-title {
+  display: none;
+}
+
+/* ---------- Pestañas (vistas de detalle) ---------- */
+.tabs-nav {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.tabs-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tabs-nav-item:hover {
+  color: var(--paper);
+}
+
+.tabs-nav-item.is-active {
+  color: var(--brass);
+  border-bottom-color: var(--brass);
+  font-weight: 600;
+}
+
+.tabs-nav-badge {
+  background: var(--surface-raised);
+  color: var(--paper-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.tabs-nav-item.is-active .tabs-nav-badge {
+  background: var(--brass);
+  color: var(--ink);
 }
 
 .simulate-preview {
@@ -758,6 +928,62 @@ table.amort-table tbody tr:hover td {
   }
   .main-panel {
     padding: 24px;
+  }
+}
+
+/* El ribbon de intereses deja de caber como franja horizontal antes que el
+   resto del layout — pasa a una pila de "pills" (una fila por año, con la
+   fecha a la izquierda y el monto a la derecha) en vez de comprimir cada
+   celda hasta que el texto no quepa. */
+@media (max-width: 599px) {
+  .ledger-ribbon::after {
+    display: none;
+  }
+  .ledger-track {
+    flex-direction: column;
+    height: auto;
+    gap: var(--space-xs);
+  }
+  .ledger-year {
+    flex: none;
+    height: 40px;
+  }
+  .ledger-year-label {
+    position: relative;
+    inset: auto;
+    height: 100%;
+    justify-content: space-between;
+    padding: 0 var(--space-sm);
+  }
+  .ledger-year-date {
+    display: block;
+    position: relative;
+    z-index: 1;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--paper);
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+  .loan-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+  }
+  .loan-subtitle {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .loan-actions {
+    flex-wrap: wrap;
+  }
+  .loan-actions .btn {
+    flex: 1 1 calc(50% - 5px);
   }
 }
 

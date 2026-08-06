@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserRepositoryPort } from '../../domain/ports/user-repository.port';
-import { User } from '../../domain/entities/user.entity';
+import { User, TemaId } from '../../domain/entities/user.entity';
 import { UserOrmEntity } from './user.orm-entity';
 
 function toDomain(row: UserOrmEntity): User {
@@ -11,6 +11,8 @@ function toDomain(row: UserOrmEntity): User {
     email: row.email,
     passwordHash: row.passwordHash,
     nombre: row.nombre,
+    temaDefecto: row.temaDefecto,
+    monedaDefecto: row.monedaDefecto,
     createdAt: row.createdAt?.toISOString(),
   });
 }
@@ -37,8 +39,14 @@ export class TypeOrmUserRepository implements UserRepositoryPort {
       email: user.email,
       passwordHash: user.passwordHash,
       nombre: user.nombre,
+      temaDefecto: user.temaDefecto,
+      monedaDefecto: user.monedaDefecto,
     });
     const saved = await this.repo.save(row);
     return saved.id;
+  }
+
+  async updatePreferencias(userId: number, temaDefecto: TemaId, monedaDefecto: string): Promise<void> {
+    await this.repo.update({ id: userId }, { temaDefecto, monedaDefecto });
   }
 }

@@ -27,7 +27,7 @@ export class LoginUserUseCase {
 
     return {
       token: this.tokenService.sign(user.id as number),
-      user: { id: user.id as number, email: user.email, nombre: user.nombre },
+      user: { id: user.id as number, email: user.email, nombre: user.nombre, temaDefecto: user.temaDefecto, monedaDefecto: user.monedaDefecto },
     };
   }
 }

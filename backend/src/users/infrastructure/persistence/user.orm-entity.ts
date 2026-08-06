@@ -15,6 +15,12 @@ export class UserOrmEntity {
   @Column({ nullable: true, type: 'text' })
   nombre!: string | null;
 
+  @Column({ name: 'tema_defecto', default: 'oscuro' })
+  temaDefecto!: 'azul' | 'oscuro' | 'claro';
+
+  @Column({ name: 'moneda_defecto', default: 'COP' })
+  monedaDefecto!: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 }

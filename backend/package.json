@@ -1,6 +1,6 @@
 {
   "name": "serbaros-loan-planner-backend",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "API de Serbaros Loan Planner (NestJS + TypeScript, arquitectura hexagonal)",
   "private": true,
   "scripts": {

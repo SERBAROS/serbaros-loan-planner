@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useState } from "react";
-import { Outlet, useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { composition } from "../../infrastructure/composition-root";
-import { LoanListItem } from "../../domain/entities/loan";
-import { money } from "../format";
-import Logo from "../components/Logo";
-import Footer from "../components/Footer";
+import { useCallback, useEffect, useState } from 'react';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { composition } from '../../infrastructure/composition-root';
+import { LoanListItem } from '../../domain/entities/loan';
+import { money } from '../format';
+import Logo from '../components/Logo';
+import Footer from '../components/Footer';
+import ThemeSwitcher from '../components/ThemeSwitcher';
 
 export interface LayoutOutletContext {
   loans: LoanListItem[];
@@ -18,14 +19,14 @@ export default function Layout() {
   const { id: activeId } = useParams();
   const [loans, setLoans] = useState<LoanListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [error, setError] = useState('');
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
       const data = await composition.listLoansUseCase.execute();
       setLoans(data);
-      setError("");
+      setError('');
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -39,14 +40,14 @@ export default function Layout() {
 
   function handleLogout() {
     logout();
-    navigate("/entrar");
+    navigate('/entrar');
   }
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="topbar-brand">
-          <Logo variant="horizontal" height={100} />
+          <Logo variant="horizontal" height={40} />
         </div>
         <div className="topbar-content">
           <div className="brand">
@@ -56,6 +57,10 @@ export default function Layout() {
             </div>
           </div>
           <div className="topbar-user">
+            <ThemeSwitcher />
+            <button className="btn btn-ghost" onClick={() => navigate('/configuracion')}>
+              Configuración
+            </button>
             <span>{user?.nombre || user?.email}</span>
             <button className="btn btn-ghost" onClick={handleLogout}>
               Salir
@@ -70,8 +75,8 @@ export default function Layout() {
             <span className="sidebar-title">Tus préstamos</span>
             <button
               className="btn btn-primary"
-              style={{ padding: "6px 12px", fontSize: 13 }}
-              onClick={() => navigate("/prestamos/nuevo")}
+              style={{ padding: '6px 12px', fontSize: 13 }}
+              onClick={() => navigate('/prestamos/nuevo')}
             >
               + Nuevo
             </button>
@@ -82,41 +87,25 @@ export default function Layout() {
             {!loading && error && <div className="empty-sidebar">{error}</div>}
             {!loading && !error && loans.length === 0 && (
               <div className="empty-sidebar">
-                Aún no tienes préstamos registrados. Crea el primero para ver su
-                tabla de amortización.
+                Aún no tienes préstamos registrados. Crea el primero para ver su tabla de amortización.
               </div>
             )}
             {!loading &&
               loans.map((loan) => (
                 <button
                   key={loan.id}
-                  className={`loan-item${
-                    String(loan.id) === activeId ? " active" : ""
-                  }`}
+                  className={`loan-item${String(loan.id) === activeId ? ' active' : ''}`}
                   onClick={() => navigate(`/prestamos/${loan.id}`)}
                 >
                   <div className="loan-item-name">
                     {loan.nombre}
-                    {loan.estado === "EN_EJECUCION" && (
-                      <span
-                        style={{
-                          marginLeft: 6,
-                          fontSize: 10,
-                          color: "var(--brass)",
-                          fontWeight: 400,
-                        }}
-                      >
-                        ● en ejecución
-                      </span>
+                    {loan.estado === 'EN_EJECUCION' && (
+                      <span style={{ marginLeft: 6, fontSize: 10, color: 'var(--brass)', fontWeight: 400 }}>● en ejecución</span>
                     )}
                   </div>
                   <div className="loan-item-meta">
-                    <span>
-                      {loan.resumen?.numeroCuotasReales ?? "—"} cuotas
-                    </span>
-                    <span className="mono">
-                      {money(loan.resumen?.valorCuota, loan.moneda)}
-                    </span>
+                    <span>{loan.resumen?.numeroCuotasReales ?? '—'} cuotas</span>
+                    <span className="mono">{money(loan.resumen?.valorCuota, loan.moneda)}</span>
                   </div>
                 </button>
               ))}
@@ -125,10 +114,9 @@ export default function Layout() {
 
         <main className="main-panel">
           <Outlet context={{ loans, refresh } satisfies LayoutOutletContext} />
+          <Footer />
         </main>
       </div>
-
-      <Footer />
     </div>
   );
 }

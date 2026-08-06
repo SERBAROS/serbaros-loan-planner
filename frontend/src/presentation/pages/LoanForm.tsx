@@ -8,6 +8,8 @@ import { LayoutOutletContext } from './Layout';
 import CurrencyInput from '../components/CurrencyInput';
 import CurrencySelect from '../components/CurrencySelect';
 import AbonoBuilder from '../components/AbonoBuilder';
+import CollapsibleSection from '../components/CollapsibleSection';
+import { useAuth } from '../context/AuthContext';
 
 interface FormState {
   nombre: string;
@@ -40,7 +42,8 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
   const { id } = useParams();
   const { refresh } = useOutletContext<LayoutOutletContext>();
 
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const { user } = useAuth();
+  const [form, setForm] = useState<FormState>(() => (mode === 'create' ? { ...emptyForm, moneda: user?.monedaDefecto ?? 'COP' } : emptyForm));
   const [compromisos, setCompromisos] = useState<AbonoDefinition[]>([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -186,7 +189,7 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
       {error && <div className="error-box">{error}</div>}
 
       <form onSubmit={handleSubmit}>
-        <h2 className="form-section-title">Estado del préstamo</h2>
+        <CollapsibleSection title="Estado del préstamo" subtitle={enEjecucion ? 'En ejecución' : 'Nuevo'} defaultOpen={mode === 'create'}>
         <div className="field">
           <div style={{ display: 'flex', gap: 10 }}>
             <button
@@ -212,8 +215,9 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
               : 'El préstamo arranca hoy, en la cuota 1.'}
           </span>
         </div>
+        </CollapsibleSection>
 
-        <h2 className="form-section-title">Datos del crédito</h2>
+        <CollapsibleSection title="Datos del crédito" subtitle={form.nombre || undefined} defaultOpen>
 
         <div className="field">
           <label htmlFor="nombre">Nombre del préstamo</label>
@@ -273,8 +277,9 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
             </span>
           </div>
         )}
+        </CollapsibleSection>
 
-        <h2 className="form-section-title">Cuota</h2>
+        <CollapsibleSection title="Cuota" subtitle={form.valorCuotaManual ? 'Manual' : 'Automática (PMT)'}>
         <div className="field">
           <label htmlFor="cuotaManual">Valor de la cuota (opcional)</label>
           <CurrencyInput
@@ -289,7 +294,9 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
             amortiza con esa cuota aunque el número de pagos reales termine siendo distinto al plazo indicado.
           </span>
         </div>
+        </CollapsibleSection>
 
+        <CollapsibleSection title="Compromiso cuota extraordinaria" subtitle={compromisos.length > 0 ? `${compromisos.length} configurado(s)` : 'Ninguno'}>
         <AbonoBuilder
           value={compromisos}
           onChange={setCompromisos}
@@ -297,6 +304,7 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
           title="Compromiso cuota extraordinaria"
           helpText="Abonos extra sobre este préstamo: puntuales (una cuota o fecha específica), recurrentes (cada N meses/años, indefinido o hasta una fecha límite), o un grupo de varios recurrentes con nombre propio (ej. primas + cesantías)."
         />
+        </CollapsibleSection>
 
         {previewError && <div className="error-box">{previewError}</div>}
 

@@ -3,6 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { composition } from '../../infrastructure/composition-root';
 import { SimulationDetail as SimulationDetailType } from '../../domain/entities/loan';
 import { money, dateEs } from '../format';
+import Tabs from '../components/Tabs';
+
+type SimTab = 'resumen' | 'tabla';
 
 export default function SimulationDetail() {
   const { id, simId } = useParams();
@@ -12,6 +15,7 @@ export default function SimulationDetail() {
   const [sim, setSim] = useState<SimulationDetailType | null>(null);
   const [error, setError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [activeTab, setActiveTab] = useState<SimTab>('resumen');
 
   useEffect(() => {
     setSim(null);
@@ -65,6 +69,17 @@ export default function SimulationDetail() {
         </div>
       </div>
 
+      <Tabs
+        active={activeTab}
+        onChange={(id) => setActiveTab(id as SimTab)}
+        tabs={[
+          { id: 'resumen', label: 'Resumen' },
+          { id: 'tabla', label: 'Tabla de amortización' },
+        ]}
+      />
+
+      {activeTab === 'resumen' && (
+        <>
       <div className="stat-grid">
         <div className="stat-cell">
           <div className="stat-label">Valor de la cuota</div>
@@ -105,6 +120,7 @@ export default function SimulationDetail() {
                   style={{ width: `${Math.max(6, (s.interesAcumulado / maxInteres) * 100)}%` }}
                 />
                 <div className="ledger-year-label">
+                  <span className="ledger-year-date">{dateEs(s.fecha)}</span>
                   <span className="ledger-year-value">{money(s.interesAcumulado, sim.moneda)}</span>
                 </div>
               </div>
@@ -112,7 +128,10 @@ export default function SimulationDetail() {
           </div>
         </div>
       )}
+        </>
+      )}
 
+      {activeTab === 'tabla' && (
       <div className="table-wrap">
         <div className="table-scroll">
           <table className="amort-table">
@@ -145,6 +164,7 @@ export default function SimulationDetail() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

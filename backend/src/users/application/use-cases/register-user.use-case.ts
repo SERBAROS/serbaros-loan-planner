@@ -12,7 +12,7 @@ export interface RegisterUserInput {
 
 export interface AuthResult {
   token: string;
-  user: { id: number; email: string; nombre: string | null };
+  user: { id: number; email: string; nombre: string | null; temaDefecto: string; monedaDefecto: string };
 }
 
 @Injectable()
@@ -39,7 +39,7 @@ export class RegisterUserUseCase {
 
     return {
       token: this.tokenService.sign(id),
-      user: { id, email: user.email, nombre: user.nombre },
+      user: { id, email: user.email, nombre: user.nombre, temaDefecto: user.temaDefecto, monedaDefecto: user.monedaDefecto },
     };
   }
 }

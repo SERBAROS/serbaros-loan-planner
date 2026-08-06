@@ -186,15 +186,15 @@ export default function AbonoBuilder({ value, onChange, currencyCode, title, hel
 
       {showForm && (
         <div className="simulate-preview" style={{ marginBottom: 24 }}>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-            <button type="button" className={tipo === 'PUNTUAL' ? 'btn btn-primary' : 'btn'} onClick={() => setTipo('PUNTUAL')} style={{ flex: 1 }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
+            <button type="button" className={tipo === 'PUNTUAL' ? 'btn btn-primary' : 'btn'} onClick={() => setTipo('PUNTUAL')} style={{ flex: '1 1 110px' }}>
               Puntual
             </button>
             <button
               type="button"
               className={tipo === 'RECURRENTE' ? 'btn btn-primary' : 'btn'}
               onClick={() => setTipo('RECURRENTE')}
-              style={{ flex: 1 }}
+              style={{ flex: '1 1 110px' }}
             >
               Recurrente
             </button>
@@ -202,7 +202,7 @@ export default function AbonoBuilder({ value, onChange, currencyCode, title, hel
               type="button"
               className={tipo === 'GRUPO_RECURRENTE' ? 'btn btn-primary' : 'btn'}
               onClick={() => setTipo('GRUPO_RECURRENTE')}
-              style={{ flex: 1 }}
+              style={{ flex: '1 1 110px' }}
             >
               Grupo recurrente
             </button>

@@ -6,6 +6,9 @@ import { money, percent, dateEs } from '../format';
 import { triggerBlobDownload } from '../download';
 import { LayoutOutletContext } from './Layout';
 import RealPaymentsSection from '../components/RealPaymentsSection';
+import Tabs from '../components/Tabs';
+
+type LoanTab = 'resumen' | 'simulaciones' | 'pago-real' | 'tabla';
 
 export default function LoanDetail() {
   const { id } = useParams();
@@ -19,6 +22,7 @@ export default function LoanDetail() {
   const [simulationsError, setSimulationsError] = useState('');
   const [deletingSimId, setDeletingSimId] = useState<number | null>(null);
   const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
+  const [activeTab, setActiveTab] = useState<LoanTab>('resumen');
 
   useEffect(() => {
     setLoan(null);
@@ -135,6 +139,19 @@ export default function LoanDetail() {
         </div>
       </div>
 
+      <Tabs
+        active={activeTab}
+        onChange={(id) => setActiveTab(id as LoanTab)}
+        tabs={[
+          { id: 'resumen', label: 'Resumen' },
+          { id: 'simulaciones', label: 'Simulaciones', badge: simulations.length },
+          { id: 'pago-real', label: 'Pago real' },
+          { id: 'tabla', label: 'Tabla de amortización' },
+        ]}
+      />
+
+      {activeTab === 'resumen' && (
+        <>
       <div className="stat-grid">
         <div className="stat-cell">
           <div className="stat-label">Valor de la cuota</div>
@@ -176,6 +193,7 @@ export default function LoanDetail() {
                   style={{ width: `${Math.max(6, (s.interesAcumulado / maxInteres) * 100)}%` }}
                 />
                 <div className="ledger-year-label">
+                  <span className="ledger-year-date">{dateEs(s.fecha)}</span>
                   <span className="ledger-year-value">{money(s.interesAcumulado, loan.moneda)}</span>
                 </div>
               </div>
@@ -183,7 +201,11 @@ export default function LoanDetail() {
           </div>
         </div>
       )}
+        </>
+      )}
 
+      {activeTab === 'simulaciones' && (
+        <>
       <div className="loan-header" style={{ marginBottom: 16 }}>
         <div>
           <h2 className="form-section-title" style={{ margin: 0 }}>
@@ -247,9 +269,12 @@ export default function LoanDetail() {
           ))}
         </div>
       )}
+        </>
+      )}
 
-      <RealPaymentsSection loanId={Number(id)} />
+      {activeTab === 'pago-real' && <RealPaymentsSection loanId={Number(id)} />}
 
+      {activeTab === 'tabla' && (
       <div className="table-wrap">
         <div className="table-scroll">
           <table className="amort-table">
@@ -282,6 +307,7 @@ export default function LoanDetail() {
           </table>
         </div>
       </div>
+      )}
     </div>
   );
 }

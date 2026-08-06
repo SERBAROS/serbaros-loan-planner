@@ -5,6 +5,7 @@ import { AbonoDefinition, LoanDetail, SimulatedPlan } from '../../domain/entitie
 import { money, percent, dateEs } from '../format';
 import CurrencyInput from '../components/CurrencyInput';
 import AbonoBuilder from '../components/AbonoBuilder';
+import CollapsibleSection from '../components/CollapsibleSection';
 
 export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
   const navigate = useNavigate();
@@ -116,7 +117,7 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
           <input id="nombre" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Con abono en diciembre" required />
         </div>
 
-        <h2 className="form-section-title">Cuota (opcional)</h2>
+        <CollapsibleSection title="Cuota (opcional)" subtitle={valorCuotaManual ? 'Personalizada' : 'Igual a la base'} defaultOpen>
         <div className="field">
           <label htmlFor="cuotaManual">Valor de la cuota para este escenario</label>
           <CurrencyInput
@@ -130,7 +131,13 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
             Si lo dejas vacío, se usa la misma cuota del préstamo base ({money(base.resumen.valorCuota, moneda)}).
           </span>
         </div>
+        </CollapsibleSection>
 
+        <CollapsibleSection
+          title="Abonos adicionales de esta simulación"
+          subtitle={compromisos.length > 0 ? `${compromisos.length} configurado(s)` : 'Ninguno'}
+          defaultOpen={mode === 'create'}
+        >
         <AbonoBuilder
           value={compromisos}
           onChange={setCompromisos}
@@ -138,6 +145,7 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
           title="Abonos adicionales de esta simulación"
           helpText="Se SUMAN al compromiso de cuota extraordinaria que ya tiene el préstamo base — no lo reemplazan."
         />
+        </CollapsibleSection>
 
         {previewError && <div className="error-box">{previewError}</div>}
 
