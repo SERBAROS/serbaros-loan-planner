@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Grid } from '@mui/material';
 import { composition } from '../../infrastructure/composition-root';
 import { SimulationDetail as SimulationDetailType } from '../../domain/entities/loan';
 import { money, dateEs } from '../format';
@@ -80,11 +81,14 @@ export default function SimulationDetail() {
 
       {activeTab === 'resumen' && (
         <>
-      <div className="stat-grid">
+      <Grid container spacing={0} className="stat-grid-mui">
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <div className="stat-cell">
           <div className="stat-label">Valor de la cuota</div>
           <div className="stat-value mono brass">{money(resumen.valorCuota, sim.moneda)}</div>
         </div>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <div className="stat-cell">
           <div className="stat-label">Cuotas reales (base: {base.numeroCuotasReales})</div>
           <div className="stat-value mono">{resumen.numeroCuotasReales}</div>
@@ -96,6 +100,8 @@ export default function SimulationDetail() {
                 : 'mismo plazo que la base'}
           </div>
         </div>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <div className="stat-cell">
           <div className="stat-label">Total intereses (base: {money(base.totalIntereses, sim.moneda)})</div>
           <div className="stat-value mono interest">{money(resumen.totalIntereses, sim.moneda)}</div>
@@ -103,11 +109,14 @@ export default function SimulationDetail() {
             {comparacion.interesesAhorrados >= 0 ? 'Ahorras' : 'Pagas de más'}: {money(Math.abs(comparacion.interesesAhorrados), sim.moneda)}
           </div>
         </div>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <div className="stat-cell">
           <div className="stat-label">Total abonado extra</div>
           <div className="stat-value mono capital">{money(comparacion.totalAbonado, sim.moneda)}</div>
         </div>
-      </div>
+        </Grid>
+      </Grid>
 
       {saldosAnuales.length > 0 && (
         <div className="ledger-ribbon">

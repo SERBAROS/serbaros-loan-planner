@@ -543,6 +543,29 @@ a {
   margin-bottom: 32px;
 }
 
+/* Versión con MUI Grid (flexbox por dentro, no CSS Grid) — mismo look de
+   "líneas finas divisorias" fusionadas, logrado con background del
+   contenedor asomando por márgenes negativos de 1px entre celdas. */
+.stat-grid-mui {
+  background: var(--border-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 32px !important;
+}
+
+.stat-grid-mui .stat-cell {
+  margin: 0.5px;
+  width: calc(100% - 1px);
+}
+
+.stat-grid-mui.stat-grid-cards .stat-cell {
+  margin: 0;
+  width: 100%;
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+
 .stat-cell {
   background: var(--surface);
   padding: 18px 20px;

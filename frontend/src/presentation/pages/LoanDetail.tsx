@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
+import { Grid } from '@mui/material';
 import { composition } from '../../infrastructure/composition-root';
 import { LoanDetail as LoanDetailType, SimulationListItem } from '../../domain/entities/loan';
 import { money, percent, dateEs } from '../format';
@@ -152,7 +153,8 @@ export default function LoanDetail() {
 
       {activeTab === 'resumen' && (
         <>
-      <div className="stat-grid">
+      <Grid container spacing={0} className="stat-grid-mui">
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <div className="stat-cell">
           <div className="stat-label">Valor de la cuota</div>
           <div className="stat-value mono brass">{money(resumen.valorCuota, loan.moneda)}</div>
@@ -160,27 +162,36 @@ export default function LoanDetail() {
             <div className="stat-note">Ingresada manualmente (PMT sugerido: {money(resumen.valorCuotaTeorica, loan.moneda)})</div>
           )}
         </div>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <div className="stat-cell">
           <div className="stat-label">Cuotas reales / solicitadas</div>
           <div className="stat-value mono">
             {resumen.numeroCuotasReales} / {resumen.numeroCuotasSolicitadas}
           </div>
         </div>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <div className="stat-cell">
           <div className="stat-label">Total capital</div>
           <div className="stat-value mono capital">{money(resumen.totalCapital, loan.moneda)}</div>
         </div>
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
         <div className="stat-cell">
           <div className="stat-label">Total intereses</div>
           <div className="stat-value mono interest">{money(resumen.totalIntereses, loan.moneda)}</div>
         </div>
+        </Grid>
         {resumen.totalAbonosExtra > 0 && (
+          <Grid size={{ xs: 12, sm: 6, md: 3 }}>
           <div className="stat-cell">
             <div className="stat-label">Total abonos extra</div>
             <div className="stat-value mono capital">{money(resumen.totalAbonosExtra, loan.moneda)}</div>
           </div>
+          </Grid>
         )}
-      </div>
+      </Grid>
 
       {saldosAnuales.length > 0 && (
         <div className="ledger-ribbon">
@@ -231,9 +242,10 @@ export default function LoanDetail() {
       )}
 
       {simulations.length > 0 && (
-        <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', marginBottom: 32 }}>
+        <Grid container spacing={2} className="stat-grid-mui stat-grid-cards" sx={{ marginBottom: '32px', background: 'none', border: 'none' }}>
           {simulations.map((sim) => (
-            <div className="stat-cell" key={sim.id} style={{ cursor: 'pointer' }} onClick={() => navigate(`/prestamos/${id}/simulaciones/${sim.id}`)}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={sim.id}>
+            <div className="stat-cell" style={{ cursor: 'pointer' }} onClick={() => navigate(`/prestamos/${id}/simulaciones/${sim.id}`)}>
               <div className="stat-label">{sim.nombre}</div>
               {sim.resumen && sim.comparacion ? (
                 <>
@@ -266,8 +278,9 @@ export default function LoanDetail() {
                 {deletingSimId === sim.id ? 'Eliminando…' : 'Eliminar'}
               </button>
             </div>
+            </Grid>
           ))}
-        </div>
+        </Grid>
       )}
         </>
       )}
