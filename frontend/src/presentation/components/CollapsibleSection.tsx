@@ -1,4 +1,6 @@
 import { ReactNode, useState } from 'react';
+import { Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 interface CollapsibleSectionProps {
   title: string;
@@ -11,15 +13,31 @@ export default function CollapsibleSection({ title, subtitle, defaultOpen = fals
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="collapsible-section">
-      <button type="button" className="collapsible-section-header" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-        <span className={`collapsible-section-chevron ${open ? 'is-open' : ''}`} aria-hidden="true">
-          ▸
-        </span>
+    <Accordion
+      expanded={open}
+      onChange={() => setOpen((v) => !v)}
+      disableGutters
+      elevation={0}
+      square
+      sx={{
+        border: '1px solid var(--border-soft)',
+        borderRadius: '6px !important',
+        overflow: 'hidden',
+        marginBottom: 'var(--space-sm)',
+        background: 'var(--surface)',
+        '&:before': { display: 'none' },
+      }}
+    >
+      <AccordionSummary
+        expandIcon={<ExpandMoreIcon sx={{ color: 'var(--brass)' }} />}
+        sx={{ '&:hover': { background: 'var(--surface-raised)' }, paddingX: '18px' }}
+      >
         <span className="collapsible-section-title">{title}</span>
         {subtitle && !open && <span className="collapsible-section-subtitle">{subtitle}</span>}
-      </button>
-      {open && <div className="collapsible-section-body">{children}</div>}
-    </div>
+      </AccordionSummary>
+      <AccordionDetails className="collapsible-section-body" sx={{ borderTop: '1px solid var(--border-soft)', paddingX: '18px', paddingTop: '4px' }}>
+        {children}
+      </AccordionDetails>
+    </Accordion>
   );
 }
