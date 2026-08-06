@@ -1,3 +1,4 @@
+import { Autocomplete, TextField } from '@mui/material';
 import { WORLD_CURRENCIES } from '../currencies';
 
 interface CurrencySelectProps {
@@ -7,13 +8,27 @@ interface CurrencySelectProps {
 }
 
 export default function CurrencySelect({ id, value, onChange }: CurrencySelectProps) {
+  const selected = WORLD_CURRENCIES.find((c) => c.code === value);
+
   return (
-    <select id={id} value={value} onChange={(e) => onChange(e.target.value)}>
-      {WORLD_CURRENCIES.map((c) => (
-        <option key={c.code} value={c.code}>
-          {c.code} — {c.name} ({c.symbol})
-        </option>
-      ))}
-    </select>
+    <Autocomplete
+      id={id}
+      disableClearable
+      autoHighlight
+      options={WORLD_CURRENCIES}
+      value={selected}
+      onChange={(_e, newValue) => {
+        if (newValue) onChange(newValue.code);
+      }}
+      getOptionLabel={(c) => `${c.code} — ${c.name} (${c.symbol})`}
+      isOptionEqualToValue={(a, b) => a.code === b.code}
+      renderInput={(params) => <TextField {...params} placeholder="Buscar moneda…" size="small" />}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          fontFamily: 'var(--font-mono)',
+          fontSize: '14px',
+        },
+      }}
+    />
   );
 }

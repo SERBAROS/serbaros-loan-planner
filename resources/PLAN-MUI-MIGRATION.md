@@ -115,14 +115,25 @@ puede esconder entre cientos de cambios simultáneos.
 
 ## Antes de empezar
 
-Necesito que confirmes 2 cosas:
-
-1. **¿Opción A (todo de una vez) u Opción B (incremental, empezando por
-   stat-grid/sidebar/acordeón/pestañas)?** — mi recomendación es B.
-2. **¿Le doy prioridad al ahorro de peso del bundle o a la velocidad de
-   desarrollo futura?** Si el bundle importa mucho (por ejemplo, planeas que la
-   app la usen muchos usuarios en conexiones lentas), hay una vía intermedia:
-   usar solo `@mui/base` (versión sin estilos, "unstyled") en vez de
-   `@mui/material` completo, y aplicar nuestros estilos actuales encima — más
-   trabajo de theming, pero bundle mucho más liviano. Si no es una preocupación
-   crítica, `@mui/material` completo es más rápido de implementar.
+> **Estado: MIGRACIÓN COMPLETA implementada y verificada.** Se ejecutó la
+> Opción A (migración completa, confirmada por el usuario) usando MUI v7
+> como base, con Minimal UI Kit como referencia de plantilla (React+MUI+Vite,
+> MIT). Cada fase se verificó con Playwright contra MariaDB real antes de
+> avanzar a la siguiente:
+>
+> 1. **Base**: `@mui/material` v7, `@emotion/*`, tema mapeado 1:1 a los 3
+>    temas existentes (`mui-theme.ts`), `MuiThemeBridge` conectando nuestro
+>    `ThemeContext` (ya sincronizado con la cuenta) al `ThemeProvider` de MUI.
+> 2. **Layout**: `AppBar` + `Drawer` — desktop sin cambios visibles, móvil
+>    con drawer temporal real (backdrop, swipe, cierre automático al navegar).
+> 3. **`stat-grid` → `Grid`**: los 3 usos migrados, con clases auxiliares
+>    (`stat-grid-mui`, `stat-grid-cards`) para preservar el look de "líneas
+>    finas divisorias" original.
+> 4. **`CollapsibleSection`/`Tabs` → `Accordion`/`Tabs` de MUI**: mismo API
+>    externo, ningún caller tuvo que cambiar.
+> 5. **`CurrencySelect` → `Autocomplete`** (buscable, mejor UX con 160
+>    monedas) y **`CurrencyInput` → `TextField`** (conservando el 100% de la
+>    lógica de manejo de cursor ya probada, solo cambió el contenedor visual).
+>
+> Bundle final: **164 KB comprimidos** (antes de MUI: 68 KB) — el costo
+> quedó dentro de lo anticipado en el análisis original.

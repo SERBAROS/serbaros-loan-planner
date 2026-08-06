@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, useEffect, ChangeEvent } from 'react';
+import { TextField, InputAdornment } from '@mui/material';
 import { getCurrency } from '../currencies';
 
 interface CurrencyInputProps {
@@ -73,7 +74,8 @@ export default function CurrencyInput({ id, value, onChange, currencyCode = 'COP
   // Se ejecuta de forma síncrona justo después de que React actualiza el DOM
   // (antes de pintar) — a diferencia de requestAnimationFrame, esto siempre
   // termina antes de que llegue el siguiente evento de teclado, incluso
-  // tecleando rápido.
+  // tecleando rápido. Misma lógica de antes, ahora sobre el <input> nativo
+  // que vive dentro del TextField de MUI (accedido vía inputRef).
   useLayoutEffect(() => {
     if (pendingCaret.current !== null && inputRef.current) {
       inputRef.current.setSelectionRange(pendingCaret.current, pendingCaret.current);
@@ -96,19 +98,34 @@ export default function CurrencyInput({ id, value, onChange, currencyCode = 'COP
   }
 
   return (
-    <div className="currency-input">
-      <span className="currency-input-symbol">{currency.symbol}</span>
-      <input
-        ref={inputRef}
-        id={id}
-        type="text"
-        inputMode="decimal"
-        value={display}
-        onChange={handleChange}
-        required={required}
-        placeholder={placeholder}
-        autoComplete="off"
-      />
-    </div>
+    <TextField
+      id={id}
+      inputRef={inputRef}
+      value={display}
+      onChange={handleChange}
+      required={required}
+      placeholder={placeholder}
+      size="small"
+      fullWidth
+      className="currency-input"
+      slotProps={{
+        input: {
+          startAdornment: (
+            <InputAdornment position="start">
+              <span className="currency-input-symbol">{currency.symbol}</span>
+            </InputAdornment>
+          ),
+        },
+        htmlInput: {
+          inputMode: 'decimal',
+          autoComplete: 'off',
+        },
+      }}
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          fontFamily: 'var(--font-mono)',
+        },
+      }}
+    />
   );
 }
