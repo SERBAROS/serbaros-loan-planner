@@ -1,11 +1,11 @@
-import { useNavigate } from 'react-router-dom';
 import Logo from './Logo';
 import { useCookieConsent } from '../context/CookieConsentContext';
+import { useLegalDialogs } from '../context/LegalDialogsContext';
 
 export default function Footer() {
   const year = new Date().getFullYear();
-  const navigate = useNavigate();
   const { openPreferences } = useCookieConsent();
+  const { openTerms, openPrivacy } = useLegalDialogs();
 
   const linkStyle: React.CSSProperties = { color: 'var(--muted)', cursor: 'pointer', fontSize: 12, textDecoration: 'none' };
 
@@ -39,10 +39,10 @@ export default function Footer() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' }}>
-        <a onClick={() => navigate('/terminos')} style={linkStyle}>
+        <a onClick={openTerms} style={linkStyle}>
           Términos de uso
         </a>
-        <a onClick={() => navigate('/privacidad')} style={linkStyle}>
+        <a onClick={openPrivacy} style={linkStyle}>
           Privacidad
         </a>
         <a onClick={openPreferences} style={linkStyle}>

@@ -3,6 +3,7 @@ import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import { AppBar, Toolbar, Drawer, IconButton, Box, Avatar, useMediaQuery } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import SettingsIcon from '@mui/icons-material/Settings';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { useAuth } from '../context/AuthContext';
 import { composition } from '../../infrastructure/composition-root';
 import { LoanListItem } from '../../domain/entities/loan';
@@ -48,6 +49,13 @@ export default function Layout() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  function handleDownloadTutorial() {
+    const a = document.createElement('a');
+    a.href = `${import.meta.env.BASE_URL}tutorial-serbaros-loan-planner.pdf`;
+    a.download = 'tutorial-serbaros-loan-planner.pdf';
+    a.click();
+  }
 
   function goTo(path: string) {
     navigate(path);
@@ -113,6 +121,14 @@ export default function Layout() {
             </div>
           </div>
           <div className="topbar-user">
+            <IconButton
+              onClick={handleDownloadTutorial}
+              aria-label="Ayuda"
+              title="Descargar tutorial de la app (PDF)"
+              sx={{ color: 'var(--muted)' }}
+            >
+              <HelpOutlineIcon />
+            </IconButton>
             <IconButton onClick={() => setSettingsOpen(true)} aria-label="Configuración" sx={{ color: 'var(--muted)' }}>
               <SettingsIcon />
             </IconButton>

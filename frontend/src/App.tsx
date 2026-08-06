@@ -10,8 +10,6 @@ import SimulationForm from './presentation/pages/SimulationForm';
 import SimulationDetail from './presentation/pages/SimulationDetail';
 import Settings from './presentation/pages/Settings';
 import Profile from './presentation/pages/Profile';
-import Terms from './presentation/pages/Terms';
-import Privacy from './presentation/pages/Privacy';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { isAuthenticated } = useAuth();
@@ -24,8 +22,6 @@ export default function App() {
     <Routes>
       <Route path="/entrar" element={<Login />} />
       <Route path="/registro" element={<Register />} />
-      <Route path="/terminos" element={<Terms />} />
-      <Route path="/privacidad" element={<Privacy />} />
 
       <Route
         path="/"

@@ -154,15 +154,33 @@ export class PdfKitLoanExporter implements PdfExporterPort {
 
     if (!mejor.comparacion || mejor.comparacion.interesesAhorrados <= 0) return;
 
-    doc.moveDown(0.5);
+    const nombrePrestamo = data.loan.nombre;
+    const ahorro = money(mejor.comparacion.interesesAhorrados);
+    const cuotas = mejor.comparacion.cuotasAdelantadas;
+    const cuotasTexto = cuotas === 1 ? '1 cuota' : `${cuotas} cuotas`;
+
+    doc.moveDown(0.6);
+    const boxTop = doc.y;
+    const boxLeft = PORTRAIT_MARGIN;
+    const boxWidth = doc.page.width - PORTRAIT_MARGIN * 2;
+    const boxHeight = 62;
+
+    doc.roundedRect(boxLeft, boxTop, boxWidth, boxHeight, 6).fill('#eaf6ef');
     doc
       .fontSize(11)
-      .fillColor('#5c9c78')
+      .fillColor('#2f7a52')
+      .text('Un consejo antes de seguir', boxLeft + 16, boxTop + 12, { width: boxWidth - 32 });
+    doc
+      .fontSize(10)
+      .fillColor('#3a5c48')
       .text(
-        `Mejor escenario: "${mejor.nombre}" ahorra ${money(mejor.comparacion.interesesAhorrados)} en intereses y adelanta ${
-          mejor.comparacion.cuotasAdelantadas
-        } cuotas frente a la estimación.`,
+        `Con "${mejor.nombre}" te podrías ahorrar ${ahorro} en intereses y terminar de pagar "${nombrePrestamo}" ${cuotasTexto} antes de lo previsto. Vale la pena echarle un ojo a esa simulación con calma.`,
+        boxLeft + 16,
+        boxTop + 28,
+        { width: boxWidth - 32 },
       );
+
+    doc.y = boxTop + boxHeight + 12;
   }
 
   /**

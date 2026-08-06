@@ -1,10 +1,10 @@
-import { useNavigate } from 'react-router-dom';
 import { Box, Dialog, DialogTitle, DialogContent, DialogActions, Switch, FormControlLabel, Typography } from '@mui/material';
 import { useCookieConsent } from '../context/CookieConsentContext';
+import { useLegalDialogs } from '../context/LegalDialogsContext';
 import { useState } from 'react';
 
 export default function CookieConsentBanner() {
-  const navigate = useNavigate();
+  const { openPrivacy } = useLegalDialogs();
   const { needsDecision, preferencesOpen, openPreferences, closePreferences, acceptAll, rejectNonEssential, savePreferences, consent } =
     useCookieConsent();
   const [draftAnaliticas, setDraftAnaliticas] = useState(consent?.analiticas ?? false);
@@ -36,7 +36,7 @@ export default function CookieConsentBanner() {
             <Typography sx={{ fontSize: 14, color: 'var(--paper)', lineHeight: 1.5 }}>
               Usamos almacenamiento necesario para que la app funcione (tu sesión, tus preferencias). Con tu permiso,
               también nos gustaría usar cookies opcionales de analítica y publicidad —{' '}
-              <a onClick={() => navigate('/privacidad')} style={{ color: 'var(--brass)', cursor: 'pointer', textDecoration: 'underline' }}>
+              <a onClick={openPrivacy} style={{ color: 'var(--brass)', cursor: 'pointer', textDecoration: 'underline' }}>
                 más información aquí
               </a>
               .
