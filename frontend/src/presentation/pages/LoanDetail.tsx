@@ -9,7 +9,7 @@ import { LayoutOutletContext } from './Layout';
 import RealPaymentsSection from '../components/RealPaymentsSection';
 import Tabs from '../components/Tabs';
 import AnnualInterestCards from '../components/AnnualInterestCards';
-import InterestChart, { ChartSeriesDef } from '../components/InterestChart';
+import LoanChartsSection, { ChartSeriesDef } from '../components/LoanChartsSection';
 
 type LoanTab = 'resumen' | 'simulaciones' | 'pago-real' | 'tabla';
 
@@ -194,23 +194,9 @@ export default function LoanDetail() {
         )}
       </Grid>
 
-      <InterestChart
+      <LoanChartsSection
         moneda={loan.moneda}
-        seriesDefs={[
-          { id: 'estimado', label: 'Estimado', color: '#15AEB7', defaultOn: true, getTabla: () => tabla },
-          {
-            id: 'pagoreal',
-            label: 'Pagado real',
-            color: '#5C9C78',
-            getTabla: () => composition.getRealPaymentPlanUseCase.execute(Number(id)).then((d) => d.tabla),
-          },
-          ...simulations.map((s, i) => ({
-            id: `sim-${s.id}`,
-            label: s.nombre,
-            color: ['#FFEF00', '#C06A4C', '#8E7CC3', '#4C8BC0'][i % 4],
-            getTabla: () => composition.getSimulationUseCase.execute(Number(id), s.id).then((d) => d.tabla),
-          })),
-        ] satisfies ChartSeriesDef[]}
+        fixedSeries={[{ id: 'estimado', label: 'Estimado', color: '#15AEB7', getTabla: () => tabla }] satisfies ChartSeriesDef[]}
       />
 
       <Box sx={{ marginTop: '24px' }}>
@@ -243,6 +229,21 @@ export default function LoanDetail() {
         <p className="field-hint" style={{ marginBottom: 32 }}>
           Aún no tienes simulaciones para este préstamo.
         </p>
+      )}
+
+      {simulations.length > 0 && (
+        <LoanChartsSection
+          moneda={loan.moneda}
+          pickerLabel="Simulaciones a comparar"
+          fixedSeries={[{ id: 'base', label: 'Préstamo base', color: '#8C93A0', getTabla: () => tabla }] satisfies ChartSeriesDef[]}
+          toggleableSeries={simulations.map((s, i) => ({
+            id: `sim-${s.id}`,
+            label: s.nombre,
+            color: ['#15AEB7', '#FFEF00', '#C06A4C', '#8E7CC3', '#4C8BC0'][i % 5],
+            defaultOn: true,
+            getTabla: () => composition.getSimulationUseCase.execute(Number(id), s.id).then((d) => d.tabla),
+          }))}
+        />
       )}
 
       {simulations.length > 0 && (
@@ -289,7 +290,25 @@ export default function LoanDetail() {
         </>
       )}
 
-      {activeTab === 'pago-real' && <RealPaymentsSection loanId={Number(id)} />}
+      {activeTab === 'pago-real' && (
+        <>
+          <LoanChartsSection
+            moneda={loan.moneda}
+            fixedSeries={
+              [
+                {
+                  id: 'pagoreal',
+                  label: 'Pago real',
+                  color: '#5C9C78',
+                  getTabla: () => composition.getRealPaymentPlanUseCase.execute(Number(id)).then((d) => d.tabla),
+                },
+                { id: 'estimado', label: 'Préstamo estimado', color: '#15AEB7', getTabla: () => tabla },
+              ] satisfies ChartSeriesDef[]
+            }
+          />
+          <RealPaymentsSection loanId={Number(id)} />
+        </>
+      )}
 
       {activeTab === 'tabla' && (
       <div className="table-wrap">

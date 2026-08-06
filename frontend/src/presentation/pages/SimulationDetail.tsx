@@ -6,7 +6,7 @@ import { SimulationDetail as SimulationDetailType } from '../../domain/entities/
 import { money, dateEs } from '../format';
 import Tabs from '../components/Tabs';
 import AnnualInterestCards from '../components/AnnualInterestCards';
-import InterestChart, { ChartSeriesDef } from '../components/InterestChart';
+import LoanChartsSection, { ChartSeriesDef } from '../components/LoanChartsSection';
 
 type SimTab = 'resumen' | 'tabla';
 
@@ -119,17 +119,19 @@ export default function SimulationDetail() {
         </Grid>
       </Grid>
 
-      <InterestChart
+      <LoanChartsSection
         moneda={sim.moneda}
-        seriesDefs={[
-          { id: 'simulacion', label: sim.nombre, color: '#15AEB7', defaultOn: true, getTabla: () => tabla },
-          {
-            id: 'base',
-            label: 'Préstamo base',
-            color: '#8C93A0',
-            getTabla: () => composition.getLoanUseCase.execute(loanId).then((d) => d.tabla),
-          },
-        ] satisfies ChartSeriesDef[]}
+        fixedSeries={
+          [
+            { id: 'simulacion', label: sim.nombre, color: '#15AEB7', getTabla: () => tabla },
+            {
+              id: 'base',
+              label: 'Préstamo base',
+              color: '#8C93A0',
+              getTabla: () => composition.getLoanUseCase.execute(loanId).then((d) => d.tabla),
+            },
+          ] satisfies ChartSeriesDef[]
+        }
       />
 
       <Box sx={{ marginTop: '24px' }}>
