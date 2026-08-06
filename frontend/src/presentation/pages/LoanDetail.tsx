@@ -8,6 +8,7 @@ import { triggerBlobDownload } from '../download';
 import { LayoutOutletContext } from './Layout';
 import RealPaymentsSection from '../components/RealPaymentsSection';
 import Tabs from '../components/Tabs';
+import AnnualInterestCards from '../components/AnnualInterestCards';
 
 type LoanTab = 'resumen' | 'simulaciones' | 'pago-real' | 'tabla';
 
@@ -93,7 +94,6 @@ export default function LoanDetail() {
   if (!loan) return <div className="panel-empty">Cargando…</div>;
 
   const { resumen, tabla, saldosAnuales } = loan;
-  const maxInteres = Math.max(...saldosAnuales.map((s) => s.interesAcumulado), 1);
   const yearMarks = new Set(saldosAnuales.map((s) => s.cuota));
 
   return (
@@ -193,25 +193,7 @@ export default function LoanDetail() {
         )}
       </Grid>
 
-      {saldosAnuales.length > 0 && (
-        <div className="ledger-ribbon">
-          <div className="ledger-ribbon-label">Interés acumulado por año (cada 12 cuotas)</div>
-          <div className="ledger-track">
-            {saldosAnuales.map((s) => (
-              <div key={s.cuota} className="ledger-year" title={`Cuota ${s.cuota} · ${dateEs(s.fecha)}`}>
-                <div
-                  className="ledger-year-fill"
-                  style={{ width: `${Math.max(6, (s.interesAcumulado / maxInteres) * 100)}%` }}
-                />
-                <div className="ledger-year-label">
-                  <span className="ledger-year-date">{dateEs(s.fecha)}</span>
-                  <span className="ledger-year-value">{money(s.interesAcumulado, loan.moneda)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <AnnualInterestCards saldosAnuales={saldosAnuales} tabla={tabla} moneda={loan.moneda} />
         </>
       )}
 

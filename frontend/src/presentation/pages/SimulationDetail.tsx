@@ -5,6 +5,7 @@ import { composition } from '../../infrastructure/composition-root';
 import { SimulationDetail as SimulationDetailType } from '../../domain/entities/loan';
 import { money, dateEs } from '../format';
 import Tabs from '../components/Tabs';
+import AnnualInterestCards from '../components/AnnualInterestCards';
 
 type SimTab = 'resumen' | 'tabla';
 
@@ -45,7 +46,6 @@ export default function SimulationDetail() {
   if (!sim) return <div className="panel-empty">Cargando…</div>;
 
   const { resumen, tabla, saldosAnuales, comparacion, base } = sim;
-  const maxInteres = Math.max(...saldosAnuales.map((s) => s.interesAcumulado), 1);
   const yearMarks = new Set(saldosAnuales.map((s) => s.cuota));
 
   return (
@@ -118,25 +118,7 @@ export default function SimulationDetail() {
         </Grid>
       </Grid>
 
-      {saldosAnuales.length > 0 && (
-        <div className="ledger-ribbon">
-          <div className="ledger-ribbon-label">Interés acumulado por año (cada 12 cuotas)</div>
-          <div className="ledger-track">
-            {saldosAnuales.map((s) => (
-              <div key={s.cuota} className="ledger-year" title={`Cuota ${s.cuota} · ${dateEs(s.fecha)}`}>
-                <div
-                  className="ledger-year-fill"
-                  style={{ width: `${Math.max(6, (s.interesAcumulado / maxInteres) * 100)}%` }}
-                />
-                <div className="ledger-year-label">
-                  <span className="ledger-year-date">{dateEs(s.fecha)}</span>
-                  <span className="ledger-year-value">{money(s.interesAcumulado, sim.moneda)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <AnnualInterestCards saldosAnuales={saldosAnuales} tabla={tabla} moneda={sim.moneda} />
         </>
       )}
 

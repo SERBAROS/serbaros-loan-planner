@@ -62,7 +62,7 @@ export function buildMuiTheme(themeId: ThemeId): Theme {
         },
       },
       MuiAppBar: {
-        defaultProps: { elevation: 0 },
+        defaultProps: { elevation: 0, color: 'inherit' },
         styleOverrides: {
           root: { backgroundColor: p.surface, borderBottom: `1px solid ${p.borderSoft}` },
         },
