@@ -49,4 +49,8 @@ export class TypeOrmUserRepository implements UserRepositoryPort {
   async updatePreferencias(userId: number, temaDefecto: TemaId, monedaDefecto: string): Promise<void> {
     await this.repo.update({ id: userId }, { temaDefecto, monedaDefecto });
   }
+
+  async updateNombre(userId: number, nombre: string | null): Promise<void> {
+    await this.repo.update({ id: userId }, { nombre });
+  }
 }

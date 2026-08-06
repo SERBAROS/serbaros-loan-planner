@@ -11,6 +11,7 @@ import { JwtTokenService } from './infrastructure/security/jwt-token.service';
 import { JwtStrategy } from './infrastructure/security/jwt.strategy';
 import { AuthController } from './infrastructure/controllers/auth.controller';
 import { PreferenciasController } from './infrastructure/controllers/preferencias.controller';
+import { ProfileController } from './infrastructure/controllers/profile.controller';
 
 import { USER_REPOSITORY } from './domain/ports/user-repository.port';
 import { PASSWORD_HASHER } from './domain/ports/password-hasher.port';
@@ -19,6 +20,7 @@ import { TOKEN_SERVICE } from './domain/ports/token-service.port';
 import { RegisterUserUseCase } from './application/use-cases/register-user.use-case';
 import { LoginUserUseCase } from './application/use-cases/login-user.use-case';
 import { GetPreferenciasUseCase, UpdatePreferenciasUseCase } from './application/use-cases/manage-preferencias.use-case';
+import { GetProfileUseCase, UpdateProfileUseCase } from './application/use-cases/manage-profile.use-case';
 
 @Module({
   imports: [
@@ -33,12 +35,14 @@ import { GetPreferenciasUseCase, UpdatePreferenciasUseCase } from './application
       }),
     }),
   ],
-  controllers: [AuthController, PreferenciasController],
+  controllers: [AuthController, PreferenciasController, ProfileController],
   providers: [
     RegisterUserUseCase,
     LoginUserUseCase,
     GetPreferenciasUseCase,
     UpdatePreferenciasUseCase,
+    GetProfileUseCase,
+    UpdateProfileUseCase,
     JwtStrategy,
     { provide: USER_REPOSITORY, useClass: TypeOrmUserRepository },
     { provide: PASSWORD_HASHER, useClass: BcryptPasswordHasher },

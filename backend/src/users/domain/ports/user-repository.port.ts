@@ -7,4 +7,5 @@ export interface UserRepositoryPort {
   findById(id: number): Promise<User | null>;
   create(user: User): Promise<number>;
   updatePreferencias(userId: number, temaDefecto: TemaId, monedaDefecto: string): Promise<void>;
+  updateNombre(userId: number, nombre: string | null): Promise<void>;
 }

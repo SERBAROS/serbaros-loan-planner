@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
-import { AppBar, Toolbar, Drawer, IconButton, Box, useMediaQuery } from '@mui/material';
+import { AppBar, Toolbar, Drawer, IconButton, Box, Avatar, useMediaQuery } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useAuth } from '../context/AuthContext';
 import { composition } from '../../infrastructure/composition-root';
 import { LoanListItem } from '../../domain/entities/loan';
 import { money } from '../format';
 import Logo from '../components/Logo';
 import Footer from '../components/Footer';
-import ThemeSwitcher from '../components/ThemeSwitcher';
+import SettingsDrawer from '../components/SettingsDrawer';
+import ProfileMenu from '../components/ProfileMenu';
 
 export interface LayoutOutletContext {
   loans: LoanListItem[];
@@ -18,13 +20,15 @@ export interface LayoutOutletContext {
 const DRAWER_WIDTH = 300;
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const { id: activeId } = useParams();
   const [loans, setLoans] = useState<LoanListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [profileAnchor, setProfileAnchor] = useState<HTMLElement | null>(null);
 
   const isMobile = useMediaQuery('(max-width:860px)');
 
@@ -44,11 +48,6 @@ export default function Layout() {
   useEffect(() => {
     refresh();
   }, [refresh]);
-
-  function handleLogout() {
-    logout();
-    navigate('/entrar');
-  }
 
   function goTo(path: string) {
     navigate(path);
@@ -114,17 +113,20 @@ export default function Layout() {
             </div>
           </div>
           <div className="topbar-user">
-            <ThemeSwitcher />
-            <button className="btn btn-ghost" onClick={() => navigate('/configuracion')}>
-              Configuración
-            </button>
-            <span>{user?.nombre || user?.email}</span>
-            <button className="btn btn-ghost" onClick={handleLogout}>
-              Salir
-            </button>
+            <IconButton onClick={() => setSettingsOpen(true)} aria-label="Configuración" sx={{ color: 'var(--muted)' }}>
+              <SettingsIcon />
+            </IconButton>
+            <IconButton onClick={(e) => setProfileAnchor(e.currentTarget)} aria-label="Perfil" sx={{ padding: 0.4 }}>
+              <Avatar sx={{ width: 34, height: 34, backgroundColor: 'var(--brass)', color: 'var(--ink)', fontSize: 14, fontWeight: 700 }}>
+                {(user?.nombre || user?.email || '?').trim().charAt(0).toUpperCase()}
+              </Avatar>
+            </IconButton>
           </div>
         </Toolbar>
       </AppBar>
+
+      <SettingsDrawer open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <ProfileMenu anchorEl={profileAnchor} onClose={() => setProfileAnchor(null)} />
 
       <div className="layout">
         {isMobile ? (

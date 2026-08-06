@@ -9,6 +9,7 @@ import LoanDetail from './presentation/pages/LoanDetail';
 import SimulationForm from './presentation/pages/SimulationForm';
 import SimulationDetail from './presentation/pages/SimulationDetail';
 import Settings from './presentation/pages/Settings';
+import Profile from './presentation/pages/Profile';
 
 function RequireAuth({ children }: { children: JSX.Element }) {
   const { isAuthenticated } = useAuth();
@@ -38,6 +39,7 @@ export default function App() {
         <Route path="prestamos/:id/simulaciones/:simId" element={<SimulationDetail />} />
         <Route path="prestamos/:id/simulaciones/:simId/editar" element={<SimulationForm mode="edit" />} />
         <Route path="configuracion" element={<Settings />} />
+        <Route path="perfil" element={<Profile />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />

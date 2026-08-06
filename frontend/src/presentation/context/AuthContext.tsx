@@ -10,6 +10,7 @@ interface AuthContextValue {
   register: (email: string, password: string, nombre?: string) => Promise<void>;
   logout: () => void;
   updateUserPreferences: (temaDefecto: AuthUser['temaDefecto'], monedaDefecto: string) => void;
+  updateUserNombre: (nombre: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -44,6 +45,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updateUserNombre = useCallback((nombre: string | null) => {
+    setSession((current) => {
+      if (!current) return current;
+      const next: Session = { ...current, user: { ...current.user, nombre } };
+      composition.sessionStorage.save(next);
+      return next;
+    });
+  }, []);
+
   const value: AuthContextValue = {
     token: session?.token ?? null,
     user: session?.user ?? null,
@@ -52,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     register,
     logout,
     updateUserPreferences,
+    updateUserNombre,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
