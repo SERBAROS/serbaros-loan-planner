@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useOutletContext, useParams } from 'react-router-dom';
-import { Grid } from '@mui/material';
+import { Grid, Box } from '@mui/material';
 import { composition } from '../../infrastructure/composition-root';
 import { LoanDetail as LoanDetailType, SimulationListItem } from '../../domain/entities/loan';
 import { money, percent, dateEs } from '../format';
@@ -9,6 +9,7 @@ import { LayoutOutletContext } from './Layout';
 import RealPaymentsSection from '../components/RealPaymentsSection';
 import Tabs from '../components/Tabs';
 import AnnualInterestCards from '../components/AnnualInterestCards';
+import InterestChart, { ChartSeriesDef } from '../components/InterestChart';
 
 type LoanTab = 'resumen' | 'simulaciones' | 'pago-real' | 'tabla';
 
@@ -193,7 +194,28 @@ export default function LoanDetail() {
         )}
       </Grid>
 
-      <AnnualInterestCards saldosAnuales={saldosAnuales} tabla={tabla} moneda={loan.moneda} />
+      <InterestChart
+        moneda={loan.moneda}
+        seriesDefs={[
+          { id: 'estimado', label: 'Estimado', color: '#15AEB7', defaultOn: true, getTabla: () => tabla },
+          {
+            id: 'pagoreal',
+            label: 'Pagado real',
+            color: '#5C9C78',
+            getTabla: () => composition.getRealPaymentPlanUseCase.execute(Number(id)).then((d) => d.tabla),
+          },
+          ...simulations.map((s, i) => ({
+            id: `sim-${s.id}`,
+            label: s.nombre,
+            color: ['#FFEF00', '#C06A4C', '#8E7CC3', '#4C8BC0'][i % 4],
+            getTabla: () => composition.getSimulationUseCase.execute(Number(id), s.id).then((d) => d.tabla),
+          })),
+        ] satisfies ChartSeriesDef[]}
+      />
+
+      <Box sx={{ marginTop: '24px' }}>
+        <AnnualInterestCards saldosAnuales={saldosAnuales} tabla={tabla} moneda={loan.moneda} />
+      </Box>
         </>
       )}
 

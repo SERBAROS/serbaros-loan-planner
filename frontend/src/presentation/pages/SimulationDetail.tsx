@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Grid } from '@mui/material';
+import { Grid, Box } from '@mui/material';
 import { composition } from '../../infrastructure/composition-root';
 import { SimulationDetail as SimulationDetailType } from '../../domain/entities/loan';
 import { money, dateEs } from '../format';
 import Tabs from '../components/Tabs';
 import AnnualInterestCards from '../components/AnnualInterestCards';
+import InterestChart, { ChartSeriesDef } from '../components/InterestChart';
 
 type SimTab = 'resumen' | 'tabla';
 
@@ -118,7 +119,22 @@ export default function SimulationDetail() {
         </Grid>
       </Grid>
 
-      <AnnualInterestCards saldosAnuales={saldosAnuales} tabla={tabla} moneda={sim.moneda} />
+      <InterestChart
+        moneda={sim.moneda}
+        seriesDefs={[
+          { id: 'simulacion', label: sim.nombre, color: '#15AEB7', defaultOn: true, getTabla: () => tabla },
+          {
+            id: 'base',
+            label: 'Préstamo base',
+            color: '#8C93A0',
+            getTabla: () => composition.getLoanUseCase.execute(loanId).then((d) => d.tabla),
+          },
+        ] satisfies ChartSeriesDef[]}
+      />
+
+      <Box sx={{ marginTop: '24px' }}>
+        <AnnualInterestCards saldosAnuales={saldosAnuales} tabla={tabla} moneda={sim.moneda} />
+      </Box>
         </>
       )}
 

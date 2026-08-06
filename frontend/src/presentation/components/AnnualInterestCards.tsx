@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { Box, IconButton } from '@mui/material';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { Box, IconButton, LinearProgress } from '@mui/material';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -17,10 +16,9 @@ interface AnnualInterestCardsProps {
 const CARD_WIDTH = 236;
 const CARD_GAP = 16;
 
-/** Escala de "calor" de 3 puntos (verde → dorado → rojo/naranja), calculada
- * sobre los mismos colores semánticos del tema — así el color de cada
- * tarjeta comunica directamente qué tan alto fue el interés ESE año
- * respecto a los demás, en vez de solo rotar colores sin significado. */
+/** Escala de "calor" de 3 puntos (verde → dorado → rojo/naranja) — el color
+ * de cada tarjeta comunica directamente qué tan alto fue el interés ESE año
+ * respecto a los demás. */
 function heatColor(intensity: number): string {
   const t = Math.max(0, Math.min(1, intensity));
   if (t <= 0.5) {
@@ -32,13 +30,10 @@ function heatColor(intensity: number): string {
 }
 
 function cardBackground(accent: string, intensity: number) {
-  // A mayor interés ese año, fondo más saturado (además del cambio de tono).
   const tintPct = 10 + intensity * 22;
   return `linear-gradient(135deg, color-mix(in srgb, ${accent} ${tintPct}%, var(--surface)), var(--surface))`;
 }
 
-/** Sparkline real (no decorativo): el interés mes a mes dentro de ese año
- * específico, tomado directo de la tabla de amortización. */
 function Sparkline({ values, color }: { values: number[]; color: string }) {
   if (values.length < 2) return null;
   const w = 92;
@@ -63,12 +58,10 @@ function Sparkline({ values, color }: { values: number[]; color: string }) {
 
 export default function AnnualInterestCards({ saldosAnuales, tabla, moneda }: AnnualInterestCardsProps) {
   const trackRef = useRef<HTMLDivElement>(null);
-  const [activeDot, setActiveDot] = useState(0);
+  const [progress, setProgress] = useState(0);
 
   if (saldosAnuales.length === 0) return null;
 
-  // Interés PAGADO ese año específico (no acumulado) — es la magnitud que
-  // realmente varía de año a año y la que tiene sentido "pintar" por calor.
   const yearlyInterest = saldosAnuales.map((_, idx) => {
     const rows = tabla.slice(idx * 12, idx * 12 + 12);
     return rows.reduce((sum, r) => sum + r.interes, 0);
@@ -76,8 +69,6 @@ export default function AnnualInterestCards({ saldosAnuales, tabla, moneda }: An
   const minYearly = Math.min(...yearlyInterest);
   const maxYearly = Math.max(...yearlyInterest);
   const yearlyRange = maxYearly - minYearly || 1;
-
-  const dotCount = Math.min(saldosAnuales.length, Math.max(1, Math.ceil(saldosAnuales.length / 4)));
 
   function scrollByCards(direction: 1 | -1) {
     const el = trackRef.current;
@@ -89,8 +80,7 @@ export default function AnnualInterestCards({ saldosAnuales, tabla, moneda }: An
     const el = trackRef.current;
     if (!el) return;
     const maxScroll = el.scrollWidth - el.clientWidth || 1;
-    const progress = el.scrollLeft / maxScroll;
-    setActiveDot(Math.min(dotCount - 1, Math.round(progress * (dotCount - 1))));
+    setProgress(Math.min(100, Math.max(0, (el.scrollLeft / maxScroll) * 100)));
   }
 
   useEffect(() => {
@@ -102,22 +92,10 @@ export default function AnnualInterestCards({ saldosAnuales, tabla, moneda }: An
   }, [saldosAnuales.length]);
 
   return (
-    <div>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <div className="ledger-ribbon-label" style={{ marginBottom: 0 }}>
-          Interés acumulado por año (cada 12 cuotas)
-        </div>
-        {saldosAnuales.length > 4 && (
-          <Box sx={{ display: 'flex', gap: '4px' }}>
-            <IconButton size="small" onClick={() => scrollByCards(-1)} aria-label="Anteriores" sx={{ color: 'var(--muted)' }}>
-              <ChevronLeftIcon fontSize="small" />
-            </IconButton>
-            <IconButton size="small" onClick={() => scrollByCards(1)} aria-label="Siguientes" sx={{ color: 'var(--muted)' }}>
-              <ChevronRightIcon fontSize="small" />
-            </IconButton>
-          </Box>
-        )}
-      </Box>
+    <Box sx={{ border: '1px solid var(--border-soft)', borderRadius: '10px', padding: '18px' }}>
+      <div className="ledger-ribbon-label" style={{ marginBottom: 16 }}>
+        Detalle por año
+      </div>
 
       <Box
         ref={trackRef}
@@ -149,11 +127,28 @@ export default function AnnualInterestCards({ saldosAnuales, tabla, moneda }: An
                 background: cardBackground(accent, intensity),
                 border: '1px solid var(--border-soft)',
                 borderRadius: '10px',
-                padding: '16px 18px',
+                padding: '14px 16px',
+                position: 'relative',
               }}
             >
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                <TrendingUpIcon sx={{ color: accent, fontSize: 26, opacity: 0.9 }} />
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                <Box
+                  sx={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: '50%',
+                    backgroundColor: accent,
+                    color: 'var(--ink)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
+                  {idx + 1}
+                </Box>
                 {pctChange !== null && (
                   <Box
                     sx={{
@@ -172,9 +167,9 @@ export default function AnnualInterestCards({ saldosAnuales, tabla, moneda }: An
               </Box>
 
               <div className="stat-label" style={{ marginBottom: 4 }}>
-                Año {idx + 1} · {dateEs(s.fecha)}
+                {dateEs(s.fecha)}
               </div>
-              <div className="stat-value mono" style={{ fontSize: 21, marginBottom: 14 }}>
+              <div className="stat-value mono" style={{ fontSize: 20, marginBottom: 12 }}>
                 {money(s.interesAcumulado, moneda)}
               </div>
 
@@ -187,22 +182,28 @@ export default function AnnualInterestCards({ saldosAnuales, tabla, moneda }: An
       </Box>
 
       {saldosAnuales.length > 4 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', gap: '6px', marginTop: '12px', marginBottom: '20px' }}>
-          {Array.from({ length: dotCount }).map((_, i) => (
-            <Box
-              key={i}
-              sx={{
-                width: 6,
-                height: 6,
-                borderRadius: '50%',
-                backgroundColor: i === activeDot ? 'var(--brass)' : 'var(--border)',
-                transition: 'background-color 0.15s ease',
-              }}
-            />
-          ))}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '16px' }}>
+          <Box sx={{ display: 'flex', gap: '2px' }}>
+            <IconButton size="small" onClick={() => scrollByCards(-1)} aria-label="Anteriores" sx={{ color: 'var(--muted)' }}>
+              <ChevronLeftIcon fontSize="small" />
+            </IconButton>
+            <IconButton size="small" onClick={() => scrollByCards(1)} aria-label="Siguientes" sx={{ color: 'var(--muted)' }}>
+              <ChevronRightIcon fontSize="small" />
+            </IconButton>
+          </Box>
+          <LinearProgress
+            variant="determinate"
+            value={progress}
+            sx={{
+              flex: 1,
+              height: 4,
+              borderRadius: 2,
+              backgroundColor: 'var(--border-soft)',
+              '& .MuiLinearProgress-bar': { backgroundColor: 'var(--brass)' },
+            }}
+          />
         </Box>
       )}
-      {saldosAnuales.length <= 4 && <Box sx={{ marginBottom: '32px' }} />}
-    </div>
+    </Box>
   );
 }
