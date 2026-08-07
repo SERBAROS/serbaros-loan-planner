@@ -69,10 +69,10 @@ export default function SimulationDetail() {
           <div className="loan-subtitle">
             Simulación sobre el préstamo base ·{' '}
             <a
-              onClick={() => navigate(`/prestamos/${loanId}`)}
+              onClick={() => navigate(`/prestamos/${loanId}`)} title="Ir al préstamo"
               style={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 700, color: 'var(--paper)' }}
             >
-              {loanNombre ?? 'ver préstamo original'}
+                 {loanNombre?.toUpperCase() ?? 'ver préstamo original'}
             </a>
           </div>
         </div>

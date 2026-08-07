@@ -4,6 +4,7 @@ import { RealPaymentPlan } from '../../domain/entities/loan';
 import { money, dateEs } from '../format';
 import CurrencyInput from './CurrencyInput';
 import { useConfirm } from '../context/ConfirmDialogContext';
+import { Grid } from '@mui/material';
 
 const emptyForm = { numeroCuota: '', monto: '', concepto: '', fechaPago: '' };
 
@@ -157,7 +158,8 @@ export default function RealPaymentsSection({ loanId }: { loanId: number }) {
             </p>
           ) : (
             <>
-              <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 20 }}>
+              <Grid container spacing={0} className="stat-grid-mui" sx={{ marginBottom: '20px' }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                 <div className="stat-cell">
                   <div className="stat-label">Cuotas reales (base: {plan.base.numeroCuotasReales})</div>
                   <div className="stat-value mono">{plan.resumen.numeroCuotasReales}</div>
@@ -169,6 +171,8 @@ export default function RealPaymentsSection({ loanId }: { loanId: number }) {
                         : 'mismo plazo'}
                   </div>
                 </div>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
                 <div className="stat-cell">
                   <div className="stat-label">Intereses (base: {money(plan.base.totalIntereses, moneda)})</div>
                   <div className="stat-value mono interest">{money(plan.resumen.totalIntereses, moneda)}</div>
@@ -177,11 +181,14 @@ export default function RealPaymentsSection({ loanId }: { loanId: number }) {
                     {money(Math.abs(plan.comparacion.interesesAhorrados), moneda)}
                   </div>
                 </div>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 4 }}>
                 <div className="stat-cell">
                   <div className="stat-label">Total abonado real</div>
                   <div className="stat-value mono capital">{money(plan.comparacion.totalAbonado, moneda)}</div>
                 </div>
-              </div>
+                </Grid>
+              </Grid>
 
               <div className="table-wrap" style={{ marginBottom: 32 }}>
                 <table className="amort-table">

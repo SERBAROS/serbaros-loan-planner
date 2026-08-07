@@ -12,7 +12,7 @@ import CollapsibleSection from '../components/CollapsibleSection';
 import CuotaInfoDialog from '../components/CuotaInfoDialog';
 import { useAuth } from '../context/AuthContext';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { IconButton } from '@mui/material';
+import { IconButton, Grid } from '@mui/material';
 
 type UnidadPlazo = 'cuotas' | 'meses' | 'anios';
 
@@ -381,20 +381,26 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
         {preview && (
           <div className="simulate-preview">
             <div className="simulate-preview-title">Vista previa</div>
-            <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 0 }}>
+            <Grid container spacing={0} className="stat-grid-mui">
+              <Grid size={{ xs: 12, sm: 4 }}>
               <div className="stat-cell">
                 <div className="stat-label">Cuota sugerida (PMT)</div>
                 <div className="stat-value mono">{money(preview.resumen.valorCuotaTeorica, form.moneda)}</div>
               </div>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
               <div className="stat-cell">
                 <div className="stat-label">Cuota que se usará</div>
                 <div className="stat-value mono brass">{money(preview.resumen.valorCuota, form.moneda)}</div>
               </div>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
               <div className="stat-cell">
                 <div className="stat-label">Cuotas reales hasta saldar</div>
                 <div className="stat-value mono">{preview.resumen.numeroCuotasReales}</div>
               </div>
-            </div>
+              </Grid>
+            </Grid>
             <p className="field-hint" style={{ marginTop: 12 }}>
               TEA {percent(preview.resumen.tasaEfectivaAnual)} · Tasa mensual {percent(preview.resumen.tasaMensual)}
               {preview.resumen.totalAbonosExtra > 0 && <> · Abonos extra: {money(preview.resumen.totalAbonosExtra, form.moneda)}</>}

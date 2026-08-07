@@ -12,6 +12,7 @@ import AnnualInterestCards from '../components/AnnualInterestCards';
 import LoanChartsSection, { ChartSeriesDef } from '../components/LoanChartsSection';
 import ExportDialog from '../components/ExportDialog';
 import CollapsibleActions from '../components/CollapsibleActions';
+import SimulationsCarousel from '../components/SimulationsCarousel';
 import { useConfirm } from '../context/ConfirmDialogContext';
 
 type LoanTab = 'resumen' | 'simulaciones' | 'pago-real' | 'tabla';
@@ -248,6 +249,16 @@ export default function LoanDetail() {
       )}
 
       {simulations.length > 0 && (
+        <SimulationsCarousel
+          simulations={simulations}
+          moneda={loan.moneda}
+          onSelect={(simId) => navigate(`/prestamos/${id}/simulaciones/${simId}`)}
+          onDelete={handleDeleteSimulation}
+          deletingSimId={deletingSimId}
+        />
+      )}
+
+      {simulations.length > 0 && (
         <LoanChartsSection
           moneda={loan.moneda}
           pickerLabel="Simulaciones a comparar"
@@ -260,48 +271,6 @@ export default function LoanDetail() {
             getTabla: () => composition.getSimulationUseCase.execute(Number(id), s.id).then((d) => d.tabla),
           }))}
         />
-      )}
-
-      {simulations.length > 0 && (
-        <Grid container spacing={2} className="stat-grid-mui stat-grid-cards" sx={{ marginBottom: '32px', background: 'none', border: 'none' }}>
-          {simulations.map((sim) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={sim.id}>
-            <div className="stat-cell" style={{ cursor: 'pointer' }} onClick={() => navigate(`/prestamos/${id}/simulaciones/${sim.id}`)}>
-              <div className="stat-label">{sim.nombre}</div>
-              {sim.resumen && sim.comparacion ? (
-                <>
-                  <div className="stat-value mono brass">{money(sim.resumen.valorCuota, loan.moneda)}</div>
-                  <div className="stat-note" style={{ color: sim.comparacion.interesesAhorrados >= 0 ? 'var(--capital)' : 'var(--interest)' }}>
-                    {sim.comparacion.interesesAhorrados >= 0 ? '−' : '+'}
-                    {money(Math.abs(sim.comparacion.interesesAhorrados), loan.moneda)} en intereses
-                  </div>
-                  <div className="stat-note">
-                    {sim.comparacion.cuotasAdelantadas > 0
-                      ? `${sim.comparacion.cuotasAdelantadas} cuotas antes`
-                      : sim.comparacion.cuotasAdelantadas < 0
-                        ? `${Math.abs(sim.comparacion.cuotasAdelantadas)} cuotas después`
-                        : 'mismo plazo'}
-                  </div>
-                </>
-              ) : (
-                <div className="stat-note">{sim.error || 'No se pudo calcular'}</div>
-              )}
-              <button
-                type="button"
-                className="btn btn-ghost"
-                style={{ marginTop: 10, padding: '4px 8px', fontSize: 12 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteSimulation(sim.id, sim.nombre);
-                }}
-                disabled={deletingSimId === sim.id}
-              >
-                {deletingSimId === sim.id ? 'Eliminando…' : 'Eliminar'}
-              </button>
-            </div>
-            </Grid>
-          ))}
-        </Grid>
       )}
         </>
       )}

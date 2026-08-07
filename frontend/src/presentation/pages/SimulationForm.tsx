@@ -8,7 +8,7 @@ import AbonoBuilder from '../components/AbonoBuilder';
 import CollapsibleSection from '../components/CollapsibleSection';
 import CuotaInfoDialog from '../components/CuotaInfoDialog';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import { IconButton } from '@mui/material';
+import { IconButton, Grid } from '@mui/material';
 
 export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
   const navigate = useNavigate();
@@ -177,7 +177,8 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
         {preview && (
           <div className="simulate-preview">
             <div className="simulate-preview-title">Vista previa vs. el préstamo base</div>
-            <div className="stat-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 0 }}>
+            <Grid container spacing={0} className="stat-grid-mui">
+              <Grid size={{ xs: 12, sm: 4 }}>
               <div className="stat-cell">
                 <div className="stat-label">Cuotas reales</div>
                 <div className="stat-value mono">
@@ -185,6 +186,8 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
                   <span style={{ fontSize: 13, color: 'var(--muted)' }}>vs {base.resumen.numeroCuotasReales}</span>
                 </div>
               </div>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
               <div className="stat-cell">
                 <div className="stat-label">Total intereses</div>
                 <div className="stat-value mono interest">{money(preview.resumen.totalIntereses, moneda)}</div>
@@ -192,11 +195,14 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
                   Ahorro: {money(Math.max(0, base.resumen.totalIntereses - preview.resumen.totalIntereses), moneda)}
                 </div>
               </div>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
               <div className="stat-cell">
                 <div className="stat-label">Abonado extra</div>
                 <div className="stat-value mono capital">{money(preview.resumen.totalAbonosExtra, moneda)}</div>
               </div>
-            </div>
+              </Grid>
+            </Grid>
           </div>
         )}
 
