@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 import { Grid, Box } from '@mui/material';
 import { composition } from '../../infrastructure/composition-root';
 import { SimulationDetail as SimulationDetailType } from '../../domain/entities/loan';
@@ -7,6 +7,9 @@ import { money, dateEs } from '../format';
 import Tabs from '../components/Tabs';
 import AnnualInterestCards from '../components/AnnualInterestCards';
 import LoanChartsSection, { ChartSeriesDef } from '../components/LoanChartsSection';
+import { useConfirm } from '../context/ConfirmDialogContext';
+import { LayoutOutletContext } from './Layout';
+import CollapsibleActions from '../components/CollapsibleActions';
 
 type SimTab = 'resumen' | 'tabla';
 
@@ -14,6 +17,9 @@ export default function SimulationDetail() {
   const { id, simId } = useParams();
   const navigate = useNavigate();
   const loanId = Number(id);
+  const confirm = useConfirm();
+  const { loans } = useOutletContext<LayoutOutletContext>();
+  const loanNombre = loans.find((l) => l.id === loanId)?.nombre;
 
   const [sim, setSim] = useState<SimulationDetailType | null>(null);
   const [error, setError] = useState('');
@@ -32,7 +38,13 @@ export default function SimulationDetail() {
 
   async function handleDelete() {
     if (!sim || !simId) return;
-    if (!window.confirm(`¿Eliminar la simulación "${sim.nombre}"?`)) return;
+    const ok = await confirm({
+      title: 'Eliminar simulación',
+      message: `¿Eliminar la simulación "${sim.nombre}"?`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       await composition.deleteSimulationUseCase.execute(loanId, Number(simId));
@@ -56,19 +68,20 @@ export default function SimulationDetail() {
           <h1 className="loan-title">{sim.nombre}</h1>
           <div className="loan-subtitle">
             Simulación sobre el préstamo base ·{' '}
-            <a onClick={() => navigate(`/prestamos/${loanId}`)} style={{ cursor: 'pointer', textDecoration: 'underline' }}>
-              ver préstamo original
+            <a
+              onClick={() => navigate(`/prestamos/${loanId}`)}
+              style={{ cursor: 'pointer', textDecoration: 'underline', fontWeight: 700, color: 'var(--paper)' }}
+            >
+              {loanNombre ?? 'ver préstamo original'}
             </a>
           </div>
         </div>
-        <div className="loan-actions">
-          <button className="btn" onClick={() => navigate(`/prestamos/${loanId}/simulaciones/${simId}/editar`)}>
-            Editar
-          </button>
-          <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
-            {deleting ? 'Eliminando…' : 'Eliminar'}
-          </button>
-        </div>
+        <CollapsibleActions
+          actions={[
+            { label: 'Editar', onClick: () => navigate(`/prestamos/${loanId}/simulaciones/${simId}/editar`), icon: 'edit' },
+            { label: deleting ? 'Eliminando…' : 'Eliminar', onClick: handleDelete, disabled: deleting, danger: true, icon: 'delete' },
+          ]}
+        />
       </div>
 
       <Tabs

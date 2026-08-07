@@ -1,4 +1,4 @@
-import { ExportFormat, LoanExportRepositoryPort } from '../../domain/ports/loan-export-repository.port';
+import { ExportFormat, ExportOptions, LoanExportRepositoryPort } from '../../domain/ports/loan-export-repository.port';
 
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -11,11 +11,18 @@ function extractFilename(contentDisposition: string | null, fallback: string): s
 export class HttpLoanExportRepository implements LoanExportRepositoryPort {
   constructor(private readonly getToken: () => string | null) {}
 
-  async fetchExport(loanId: number, format: ExportFormat): Promise<{ blob: Blob; filename: string }> {
+  async fetchExport(loanId: number, format: ExportFormat, options: ExportOptions): Promise<{ blob: Blob; filename: string }> {
     const token = this.getToken();
-    const res = await fetch(`${BASE_URL}/loans/${loanId}/${format === 'excel' ? 'export/excel' : 'export/pdf'}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
+    const params = new URLSearchParams();
+    params.set('incluirTabla', String(options.incluirTabla));
+    if (options.simulacionIds !== undefined) {
+      params.set('simulacionIds', options.simulacionIds.join(','));
+    }
+
+    const res = await fetch(
+      `${BASE_URL}/loans/${loanId}/${format === 'excel' ? 'export/excel' : 'export/pdf'}?${params.toString()}`,
+      { headers: token ? { Authorization: `Bearer ${token}` } : undefined },
+    );
 
     if (!res.ok) {
       let message = `Error ${res.status}`;

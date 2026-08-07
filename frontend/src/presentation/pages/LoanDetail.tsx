@@ -10,6 +10,9 @@ import RealPaymentsSection from '../components/RealPaymentsSection';
 import Tabs from '../components/Tabs';
 import AnnualInterestCards from '../components/AnnualInterestCards';
 import LoanChartsSection, { ChartSeriesDef } from '../components/LoanChartsSection';
+import ExportDialog from '../components/ExportDialog';
+import CollapsibleActions from '../components/CollapsibleActions';
+import { useConfirm } from '../context/ConfirmDialogContext';
 
 type LoanTab = 'resumen' | 'simulaciones' | 'pago-real' | 'tabla';
 
@@ -17,6 +20,7 @@ export default function LoanDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { refresh } = useOutletContext<LayoutOutletContext>();
+  const confirm = useConfirm();
 
   const [loan, setLoan] = useState<LoanDetailType | null>(null);
   const [error, setError] = useState('');
@@ -25,6 +29,7 @@ export default function LoanDetail() {
   const [simulationsError, setSimulationsError] = useState('');
   const [deletingSimId, setDeletingSimId] = useState<number | null>(null);
   const [exporting, setExporting] = useState<'excel' | 'pdf' | null>(null);
+  const [exportDialogFormat, setExportDialogFormat] = useState<'excel' | 'pdf' | null>(null);
   const [activeTab, setActiveTab] = useState<LoanTab>('resumen');
 
   useEffect(() => {
@@ -52,7 +57,13 @@ export default function LoanDetail() {
 
   async function handleDelete() {
     if (!loan || !id) return;
-    if (!window.confirm(`¿Eliminar "${loan.nombre}"? Esta acción no se puede deshacer.`)) return;
+    const ok = await confirm({
+      title: 'Eliminar préstamo',
+      message: `¿Eliminar "${loan.nombre}"? Esta acción no se puede deshacer.`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!ok) return;
     setDeleting(true);
     try {
       await composition.deleteLoanUseCase.execute(Number(id));
@@ -66,7 +77,13 @@ export default function LoanDetail() {
 
   async function handleDeleteSimulation(simId: number, nombre: string) {
     if (!id) return;
-    if (!window.confirm(`¿Eliminar la simulación "${nombre}"?`)) return;
+    const ok = await confirm({
+      title: 'Eliminar simulación',
+      message: `¿Eliminar la simulación "${nombre}"?`,
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!ok) return;
     setDeletingSimId(simId);
     try {
       await composition.deleteSimulationUseCase.execute(Number(id), simId);
@@ -78,12 +95,17 @@ export default function LoanDetail() {
     }
   }
 
-  async function handleExport(format: 'excel' | 'pdf') {
+  function handleExport(format: 'excel' | 'pdf') {
+    setExportDialogFormat(format);
+  }
+
+  async function handleConfirmExport(format: 'excel' | 'pdf', options: { simulacionIds?: number[]; incluirTabla: boolean }) {
     if (!id) return;
     setExporting(format);
     try {
-      const { blob, filename } = await composition.exportLoanUseCase.execute(Number(id), format);
+      const { blob, filename } = await composition.exportLoanUseCase.execute(Number(id), format, options);
       triggerBlobDownload(blob, filename);
+      setExportDialogFormat(null);
     } catch (err) {
       setError((err as Error).message);
     } finally {
@@ -125,20 +147,14 @@ export default function LoanDetail() {
             {loan.estado === 'EN_EJECUCION' && <> · cuota actual: {resumen.numeroCuotaInicial}</>}
           </div>
         </div>
-        <div className="loan-actions">
-          <button className="btn" onClick={() => handleExport('excel')} disabled={exporting !== null}>
-            {exporting === 'excel' ? 'Generando…' : 'Exportar Excel'}
-          </button>
-          <button className="btn" onClick={() => handleExport('pdf')} disabled={exporting !== null}>
-            {exporting === 'pdf' ? 'Generando…' : 'Exportar PDF'}
-          </button>
-          <button className="btn" onClick={() => navigate(`/prestamos/${id}/editar`)}>
-            Editar
-          </button>
-          <button className="btn btn-danger" onClick={handleDelete} disabled={deleting}>
-            {deleting ? 'Eliminando…' : 'Eliminar'}
-          </button>
-        </div>
+        <CollapsibleActions
+          actions={[
+            { label: exporting === 'excel' ? 'Generando…' : 'Exportar Excel', onClick: () => handleExport('excel'), disabled: exporting !== null, icon: 'download' },
+            { label: exporting === 'pdf' ? 'Generando…' : 'Exportar PDF', onClick: () => handleExport('pdf'), disabled: exporting !== null, icon: 'download' },
+            { label: 'Editar', onClick: () => navigate(`/prestamos/${id}/editar`), icon: 'edit' },
+            { label: deleting ? 'Eliminando…' : 'Eliminar', onClick: handleDelete, disabled: deleting, danger: true, icon: 'delete' },
+          ]}
+        />
       </div>
 
       <Tabs
@@ -344,6 +360,15 @@ export default function LoanDetail() {
         </div>
       </div>
       )}
+
+      <ExportDialog
+        open={exportDialogFormat !== null}
+        onClose={() => setExportDialogFormat(null)}
+        format={exportDialogFormat}
+        simulations={simulations}
+        onConfirm={handleConfirmExport}
+        loading={exporting !== null}
+      />
     </div>
   );
 }

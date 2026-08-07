@@ -7,6 +7,12 @@ import { USER_REPOSITORY, UserRepositoryPort } from '../../../users/domain/ports
 import { PlanComparisonService } from '../../domain/services/plan-comparison.service';
 import { LoanExportData, LoanExportPlan } from '../../domain/ports/loan-export-data';
 
+export interface BuildLoanExportOptions {
+  /** undefined = incluir todas las simulaciones; [] = ninguna; [id,...] = solo esas. */
+  simulacionIds?: number[];
+  incluirTabla: boolean;
+}
+
 @Injectable()
 export class BuildLoanExportDataUseCase {
   constructor(
@@ -16,7 +22,7 @@ export class BuildLoanExportDataUseCase {
     @Inject(USER_REPOSITORY) private readonly userRepository: UserRepositoryPort,
   ) {}
 
-  async execute(loanId: number, userId: number): Promise<LoanExportData> {
+  async execute(loanId: number, userId: number, options: BuildLoanExportOptions): Promise<LoanExportData> {
     const base = await this.loanRepository.findByIdAndUser(loanId, userId);
     if (!base) throw new NotFoundException('Préstamo no encontrado.');
 
@@ -27,7 +33,8 @@ export class BuildLoanExportDataUseCase {
       { key: 'estimacion', nombre: 'Estimación', resumen: basePlan.resumen, tabla: basePlan.tabla },
     ];
 
-    // Pago real (solo si hay al menos un pago registrado)
+    // Pago real (solo si hay al menos un pago registrado) — siempre se
+    // incluye si existe; el selector del usuario aplica solo a simulaciones.
     const pagosReales = await this.realPaymentRepository.findAllByLoan(loanId, userId);
     if (pagosReales.length > 0) {
       const planReal = base.calcularPlanConAbonosAdicionales(
@@ -42,8 +49,13 @@ export class BuildLoanExportDataUseCase {
       });
     }
 
-    // Simulaciones guardadas
-    const simulaciones = await this.simulationRepository.findAllByLoan(loanId, userId);
+    // Simulaciones guardadas — filtradas según lo que el usuario eligió en el diálogo de exportación.
+    const todasSimulaciones = await this.simulationRepository.findAllByLoan(loanId, userId);
+    const simulaciones =
+      options.simulacionIds === undefined
+        ? todasSimulaciones
+        : todasSimulaciones.filter((s) => options.simulacionIds!.includes(s.id as number));
+
     for (const sim of simulaciones) {
       try {
         const plan = sim.calcularPlan(base);
@@ -62,6 +74,7 @@ export class BuildLoanExportDataUseCase {
     return {
       loan: { id: base.id as number, nombre: base.nombre, estado: base.estado, moneda: base.moneda, createdAt: base.createdAt },
       planes,
+      incluirTabla: options.incluirTabla,
       generadoEl: new Date().toISOString(),
       generadoPor: { email: usuario?.email ?? 'desconocido', nombre: usuario?.nombre ?? null },
     };

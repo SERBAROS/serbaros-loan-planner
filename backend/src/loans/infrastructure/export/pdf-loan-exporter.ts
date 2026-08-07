@@ -51,9 +51,12 @@ export class PdfKitLoanExporter implements PdfExporterPort {
     this.renderComparacionBarras(doc, data, money);
 
     // Una o más páginas landscape por cada plan, con su tabla de amortización
-    // completa — el mismo contenido que cada hoja del Excel.
-    for (const plan of data.planes) {
-      this.renderPlanTable(doc, plan, money);
+    // completa — el mismo contenido que cada hoja del Excel. Se omite si el
+    // usuario no pidió incluir la tabla en el diálogo de exportación.
+    if (data.incluirTabla) {
+      for (const plan of data.planes) {
+        this.renderPlanTable(doc, plan, money);
+      }
     }
 
     doc.end();

@@ -6,6 +6,7 @@ import { AuthProvider } from './presentation/context/AuthContext';
 import { ThemeProvider } from './presentation/context/ThemeContext';
 import { CookieConsentProvider } from './presentation/context/CookieConsentContext';
 import { LegalDialogsProvider } from './presentation/context/LegalDialogsContext';
+import { ConfirmDialogProvider } from './presentation/context/ConfirmDialogContext';
 import MuiThemeBridge from './presentation/MuiThemeBridge';
 import CookieConsentBanner from './presentation/components/CookieConsentBanner';
 import LegalDialogs from './presentation/components/LegalDialogs';
@@ -18,11 +19,13 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <ThemeProvider>
           <MuiThemeBridge>
             <LegalDialogsProvider>
-              <CookieConsentProvider>
-                <App />
-                <CookieConsentBanner />
-                <LegalDialogs />
-              </CookieConsentProvider>
+              <ConfirmDialogProvider>
+                <CookieConsentProvider>
+                  <App />
+                  <CookieConsentBanner />
+                  <LegalDialogs />
+                </CookieConsentProvider>
+              </ConfirmDialogProvider>
             </LegalDialogsProvider>
           </MuiThemeBridge>
         </ThemeProvider>

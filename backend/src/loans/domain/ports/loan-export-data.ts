@@ -22,7 +22,9 @@ export interface LoanExportData {
     moneda: string;
     createdAt?: string;
   };
-  planes: LoanExportPlan[]; // [estimación, real?, simulación1, simulación2, ...]
+  planes: LoanExportPlan[]; // [estimación, real?, simulación1, simulación2, ...] — ya filtrados según lo que el usuario eligió mostrar
+  /** Si es false, los exportadores omiten la tabla de amortización completa (solo dejan resumen/comparación). */
+  incluirTabla: boolean;
   generadoEl: string; // ISO timestamp de cuándo se generó el reporte
   generadoPor: {
     email: string;

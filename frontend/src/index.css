@@ -1001,21 +1001,10 @@ table.amort-table tbody tr:hover td {
   .stat-grid {
     grid-template-columns: 1fr;
   }
-  .loan-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-sm);
-  }
   .loan-subtitle {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-  }
-  .loan-actions {
-    flex-wrap: wrap;
-  }
-  .loan-actions .btn {
-    flex: 1 1 calc(50% - 5px);
   }
 }
 

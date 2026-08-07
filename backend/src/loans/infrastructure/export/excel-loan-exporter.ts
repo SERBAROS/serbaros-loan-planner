@@ -27,9 +27,13 @@ export class ExcelJsLoanExporter implements ExcelExporterPort {
     this.buildInfoSheet(workbook, data);
     this.buildResumenSheet(workbook, data);
 
-    const usedNames = new Set<string>();
-    for (const plan of data.planes) {
-      this.buildPlanSheet(workbook, plan, this.uniqueSheetName(plan.nombre, usedNames), data.loan.moneda);
+    // Una hoja por plan con la tabla de amortización completa — se omite
+    // si el usuario no pidió incluir la tabla en el diálogo de exportación.
+    if (data.incluirTabla) {
+      const usedNames = new Set<string>();
+      for (const plan of data.planes) {
+        this.buildPlanSheet(workbook, plan, this.uniqueSheetName(plan.nombre, usedNames), data.loan.moneda);
+      }
     }
 
     const buffer = await workbook.xlsx.writeBuffer();

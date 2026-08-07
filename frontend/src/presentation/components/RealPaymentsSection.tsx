@@ -3,10 +3,12 @@ import { composition } from '../../infrastructure/composition-root';
 import { RealPaymentPlan } from '../../domain/entities/loan';
 import { money, dateEs } from '../format';
 import CurrencyInput from './CurrencyInput';
+import { useConfirm } from '../context/ConfirmDialogContext';
 
 const emptyForm = { numeroCuota: '', monto: '', concepto: '', fechaPago: '' };
 
 export default function RealPaymentsSection({ loanId }: { loanId: number }) {
+  const confirm = useConfirm();
   const [plan, setPlan] = useState<RealPaymentPlan | null>(null);
   const [error, setError] = useState('');
   const [form, setForm] = useState(emptyForm);
@@ -50,7 +52,13 @@ export default function RealPaymentsSection({ loanId }: { loanId: number }) {
   }
 
   async function handleDelete(id: number) {
-    if (!window.confirm('¿Eliminar este pago real del historial?')) return;
+    const ok = await confirm({
+      title: 'Eliminar pago real',
+      message: '¿Eliminar este pago real del historial?',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!ok) return;
     setDeletingId(id);
     try {
       await composition.deleteRealPaymentUseCase.execute(loanId, id);
