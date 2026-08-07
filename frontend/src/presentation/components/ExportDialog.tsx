@@ -71,7 +71,7 @@ export default function ExportDialog({ open, onClose, format, simulations, onCon
                 <FormControlLabel
                   key={s.id}
                   control={<Checkbox checked={simsSeleccionadas.has(s.id)} onChange={() => toggleSim(s.id)} size="small" />}
-                  label={<Typography sx={{ fontSize: 13.5, color: 'var(--paper)' }}>{s.nombre}</Typography>}
+                  label={<Typography sx={{ fontSize: 13.5, color: 'var(--paper)', textTransform: 'uppercase' }}>{s.nombre}</Typography>}
                 />
               ))}
             </Box>

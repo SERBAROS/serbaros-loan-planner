@@ -23,7 +23,7 @@ export default function Footer() {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Logo variant="horizontal" height={28} />
+        <Logo variant="principal" height={34} />
         <span
           style={{
             fontFamily: 'var(--font-display)',
@@ -34,7 +34,7 @@ export default function Footer() {
             color: 'var(--muted)',
           }}
         >
-          Developing Technology
+          SERBAROS DEVELOPING TECHNOLOGY
         </span>
       </div>
 

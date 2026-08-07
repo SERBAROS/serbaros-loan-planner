@@ -136,6 +136,10 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+.apexcharts-legend-text {
+  text-transform: uppercase !important;
+}
+
 .app-shell {
   height: 100%;
   display: flex;
@@ -156,7 +160,8 @@ a {
 .topbar-brand {
   display: flex;
   align-items: center;
-  padding: 0 28px;
+  justify-content: space-between;
+  padding: 0 20px;
   border-right: 1px solid var(--border-soft);
 }
 
@@ -481,6 +486,7 @@ a {
   font-weight: 600;
   font-size: 14px;
   margin-bottom: 6px;
+  text-transform: uppercase;
 }
 
 .loan-item-meta {
@@ -528,6 +534,7 @@ a {
   font-family: var(--font-display);
   font-size: 28px;
   margin: 0 0 6px;
+  text-transform: uppercase;
 }
 
 .loan-subtitle {

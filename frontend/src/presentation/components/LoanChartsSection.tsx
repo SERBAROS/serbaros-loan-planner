@@ -91,7 +91,7 @@ export default function LoanChartsSection({ moneda, fixedSeries, toggleableSerie
                   />
                 }
                 label={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--paper)' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: 'var(--paper)', textTransform: 'uppercase' }}>
                     {s.label}
                     {loading.has(s.id) && <CircularProgress size={11} sx={{ color: 'var(--muted)' }} />}
                   </Box>

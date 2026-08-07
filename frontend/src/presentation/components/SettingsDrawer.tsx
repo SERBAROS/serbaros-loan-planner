@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Drawer, IconButton, Box, Typography, Divider } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { composition } from '../../infrastructure/composition-root';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -9,9 +10,10 @@ import CurrencySelect from './CurrencySelect';
 interface SettingsDrawerProps {
   open: boolean;
   onClose: () => void;
+  onDownloadTutorial: () => void;
 }
 
-export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
+export default function SettingsDrawer({ open, onClose, onDownloadTutorial }: SettingsDrawerProps) {
   const { user, updateUserPreferences } = useAuth();
   const { theme, setTheme, options } = useTheme();
   const [moneda, setMoneda] = useState(user?.monedaDefecto ?? 'COP');
@@ -88,6 +90,21 @@ export default function SettingsDrawer({ open, onClose }: SettingsDrawerProps) {
       <button className="btn btn-primary" onClick={handleSaveMoneda} disabled={saving} style={{ width: '100%' }}>
         {saving ? 'Guardando…' : saved ? 'Guardado ✓' : 'Guardar moneda'}
       </button>
+
+      <Divider sx={{ borderColor: 'var(--border-soft)', marginTop: '24px', marginBottom: '16px' }} />
+
+      <button
+        type="button"
+        className="btn"
+        onClick={onDownloadTutorial}
+        style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+      >
+        <HelpOutlineIcon sx={{ fontSize: 18 }} />
+        Ayuda / Docs
+      </button>
+      <Typography sx={{ fontSize: 12, color: 'var(--muted)', marginTop: '8px', textAlign: 'center' }}>
+        Descarga el tutorial de la app en PDF.
+      </Typography>
     </Drawer>
   );
 }
