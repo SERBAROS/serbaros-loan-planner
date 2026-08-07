@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
-import { Box, ToggleButtonGroup, ToggleButton, Typography } from '@mui/material';
+import { Box, ToggleButtonGroup, ToggleButton, Typography, useMediaQuery } from '@mui/material';
 import { AmortizationRow } from '../../domain/entities/loan';
 import { money, dateEs } from '../format';
 
@@ -41,6 +41,7 @@ function aggregate(tabla: AmortizationRow[], granularidad: Granularidad, metric:
 
 export default function MetricLineChart({ title, metric, defaultGranularidad, series, moneda }: MetricLineChartProps) {
   const [granularidad, setGranularidad] = useState<Granularidad>(defaultGranularidad);
+  const isNarrow = useMediaQuery('(max-width:480px)');
 
   const chartSeries = useMemo(
     () =>
@@ -59,10 +60,15 @@ export default function MetricLineChart({ title, metric, defaultGranularidad, se
     grid: { borderColor: 'var(--border-soft)', strokeDashArray: 3 },
     xaxis: {
       type: 'category' as const,
-      tickAmount: 6,
-      labels: { style: { colors: 'var(--muted)', fontSize: '11px' }, rotate: -45, trim: false },
+      tickAmount: isNarrow ? 3 : 6,
+      labels: { style: { colors: 'var(--muted)', fontSize: isNarrow ? '9px' : '11px' }, rotate: -45, trim: false },
     },
-    yaxis: { labels: { formatter: (v: number) => money(v, moneda), style: { colors: 'var(--muted)', fontSize: '11px' } } },
+    yaxis: {
+      labels: {
+        formatter: (v: number) => money(v, moneda),
+        style: { colors: 'var(--muted)', fontSize: isNarrow ? '9px' : '11px' },
+      },
+    },
     tooltip: { theme: 'dark' as const, y: { formatter: (v: number) => money(v, moneda) } },
     legend: {
       show: series.length > 1,
@@ -75,8 +81,8 @@ export default function MetricLineChart({ title, metric, defaultGranularidad, se
   };
 
   return (
-    <Box sx={{ border: '1px solid var(--border-soft)', borderRadius: '10px', padding: '16px 18px', flex: 1, minWidth: 0 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+    <Box sx={{ border: '1px solid var(--border-soft)', borderRadius: '10px', padding: '16px 18px', minWidth: 0, overflow: 'hidden' }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
         <Typography sx={{ fontFamily: 'var(--font-display)', fontSize: 16, color: 'var(--paper)' }}>{title}</Typography>
         <ToggleButtonGroup
           size="small"
@@ -87,9 +93,9 @@ export default function MetricLineChart({ title, metric, defaultGranularidad, se
             '& .MuiToggleButton-root': {
               color: 'var(--muted)',
               borderColor: 'var(--border-soft)',
-              fontSize: '11px',
+              fontSize: isNarrow ? '10px' : '11px',
               textTransform: 'none',
-              padding: '3px 10px',
+              padding: isNarrow ? '2px 7px' : '3px 10px',
             },
             '& .MuiToggleButton-root.Mui-selected': {
               backgroundColor: 'var(--brass)',
@@ -107,7 +113,7 @@ export default function MetricLineChart({ title, metric, defaultGranularidad, se
       {series.length === 0 ? (
         <Box sx={{ padding: '40px 0', textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>Sin datos para mostrar.</Box>
       ) : (
-        <ReactApexChart options={options} series={chartSeries} type="line" height={260} />
+        <ReactApexChart options={options} series={chartSeries} type="line" height={260} width="100%" />
       )}
     </Box>
   );

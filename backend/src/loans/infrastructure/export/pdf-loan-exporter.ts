@@ -48,6 +48,7 @@ export class PdfKitLoanExporter implements PdfExporterPort {
     this.renderDatosCredito(doc, data, money);
     this.renderTablaComparativa(doc, data, money);
     this.renderDestacado(doc, data, money);
+    this.renderComparacionBarras(doc, data, money);
 
     // Una o más páginas landscape por cada plan, con su tabla de amortización
     // completa — el mismo contenido que cada hoja del Excel.
@@ -181,6 +182,80 @@ export class PdfKitLoanExporter implements PdfExporterPort {
       );
 
     doc.y = boxTop + boxHeight + 12;
+  }
+
+  /**
+   * Gráfico de barras horizontales (dibujado a mano con rect() — PDFKit no
+   * trae un motor de gráficos) que acompaña la recomendación: un panel con
+   * el total de intereses por plan, y otro con el número de cuotas reales
+   * por plan, para que la opción con menos de ambos salte a la vista.
+   */
+  private renderComparacionBarras(doc: PDFKit.PDFDocument, data: LoanExportData, money: MoneyFn) {
+    if (data.planes.length < 2) return; // nada que comparar con un solo plan
+
+    const planes = data.planes.slice(0, 6); // limite razonable de filas legibles
+    const panelWidth = (doc.page.width - PORTRAIT_MARGIN * 2 - 20) / 2;
+    const panelTop = doc.y;
+
+    const interesesItems = planes.map((p) => ({ label: p.nombre, value: p.resumen.totalIntereses }));
+    const cuotasItems = planes.map((p) => ({ label: p.nombre, value: p.resumen.numeroCuotasReales }));
+
+    const bottom1 = this.renderBarPanel(
+      doc,
+      PORTRAIT_MARGIN,
+      panelTop,
+      panelWidth,
+      'Total intereses por plan',
+      interesesItems,
+      '#c06a4c',
+      money,
+    );
+    const bottom2 = this.renderBarPanel(
+      doc,
+      PORTRAIT_MARGIN + panelWidth + 20,
+      panelTop,
+      panelWidth,
+      'Cuotas reales por plan',
+      cuotasItems,
+      '#0e8a92',
+      (n) => String(Math.round(n)),
+    );
+
+    doc.y = Math.max(bottom1, bottom2) + 16;
+  }
+
+  private renderBarPanel(
+    doc: PDFKit.PDFDocument,
+    x: number,
+    y: number,
+    width: number,
+    title: string,
+    items: { label: string; value: number }[],
+    color: string,
+    formatValue: (n: number) => string,
+  ): number {
+    doc.fontSize(10).fillColor('#14181c').text(title, x, y, { width });
+    let rowY = y + 16;
+    const labelWidth = 78;
+    const barAreaWidth = width - labelWidth - 8;
+    const maxValue = Math.max(...items.map((i) => i.value), 1);
+    const rowHeight = 17;
+
+    // menor primero, para que "el mejor" quede arriba a simple vista
+    const ordenados = [...items].sort((a, b) => a.value - b.value);
+
+    for (const item of ordenados) {
+      doc.fontSize(7.5).fillColor('#5a5952').text(item.label, x, rowY + 2, { width: labelWidth, ellipsis: true });
+      const barWidth = Math.max(3, (item.value / maxValue) * barAreaWidth * 0.62); // deja más margen para el valor a la derecha
+      doc.rect(x + labelWidth + 4, rowY, barWidth, 11).fill(color);
+      doc
+        .fontSize(7.5)
+        .fillColor('#14181c')
+        .text(formatValue(item.value), x + labelWidth + 4 + barWidth + 4, rowY + 2, { width: barAreaWidth - barWidth - 4 });
+      rowY += rowHeight;
+    }
+
+    return rowY;
   }
 
   /**

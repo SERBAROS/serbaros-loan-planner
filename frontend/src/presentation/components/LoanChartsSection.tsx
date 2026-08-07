@@ -102,7 +102,13 @@ export default function LoanChartsSection({ moneda, fixedSeries, toggleableSerie
         </Box>
       )}
 
-      <Box sx={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '16px',
+        }}
+      >
         <MetricLineChart title="Capital" metric="capital" defaultGranularidad="cuotas" series={resolved} moneda={moneda} />
         <MetricLineChart title="Interés" metric="interes" defaultGranularidad="anio" series={resolved} moneda={moneda} />
       </Box>

@@ -104,7 +104,12 @@ export default function Layout() {
 
   return (
     <div className="app-shell">
-      <AppBar position="static" component="header" className="topbar" sx={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr' : '300px 1fr', height: 'auto' }}>
+      <AppBar
+        position="static"
+        component="header"
+        className="topbar"
+        sx={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '300px 1fr', height: 'auto' }}
+      >
         <Toolbar className="topbar-brand" sx={{ minHeight: '76px !important' }}>
           {isMobile && (
             <IconButton aria-label="Abrir menú de préstamos" onClick={() => setMobileOpen(true)} sx={{ mr: 1, color: 'inherit' }}>

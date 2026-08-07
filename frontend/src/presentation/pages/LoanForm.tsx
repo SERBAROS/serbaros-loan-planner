@@ -9,7 +9,30 @@ import CurrencyInput from '../components/CurrencyInput';
 import CurrencySelect from '../components/CurrencySelect';
 import AbonoBuilder from '../components/AbonoBuilder';
 import CollapsibleSection from '../components/CollapsibleSection';
+import CuotaInfoDialog from '../components/CuotaInfoDialog';
 import { useAuth } from '../context/AuthContext';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { IconButton } from '@mui/material';
+
+type UnidadPlazo = 'cuotas' | 'meses' | 'anios';
+
+/** 1 cuota = 1 mes en este sistema (cada cuota cae cada 30 días) — por eso
+ * "cuotas" y "meses" son equivalentes; solo "años" necesita conversión. */
+function cuotasToDisplay(numeroCuotasStr: string, unidad: UnidadPlazo): string {
+  if (!numeroCuotasStr) return '';
+  const n = Number(numeroCuotasStr);
+  if (Number.isNaN(n)) return numeroCuotasStr;
+  if (unidad === 'anios') return String(roundForInput(n / 12, 2));
+  return numeroCuotasStr;
+}
+
+function displayToCuotas(displayValue: string, unidad: UnidadPlazo): string {
+  if (!displayValue) return '';
+  const n = Number(displayValue);
+  if (Number.isNaN(n)) return displayValue;
+  if (unidad === 'anios') return String(Math.round(n * 12));
+  return displayValue;
+}
 
 interface FormState {
   nombre: string;
@@ -49,6 +72,8 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState<SimulatedPlan | null>(null);
   const [previewError, setPreviewError] = useState('');
+  const [cuotasUnidad, setCuotasUnidad] = useState<UnidadPlazo>('cuotas');
+  const [cuotaInfoOpen, setCuotaInfoOpen] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const enEjecucion = form.estado === 'EN_EJECUCION';
@@ -249,8 +274,32 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
 
         <div className="field-row">
           <div className="field">
-            <label htmlFor="cuotas">{enEjecucion ? 'Cuotas que faltan' : 'Número de cuotas'}</label>
-            <input id="cuotas" type="number" step="1" value={form.numeroCuotas} onChange={set('numeroCuotas')} required />
+            <label htmlFor="cuotas">{enEjecucion ? 'Plazo que falta' : 'Plazo del préstamo'}</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input
+                id="cuotas"
+                type="number"
+                step={cuotasUnidad === 'anios' ? '0.5' : '1'}
+                min="0"
+                value={cuotasToDisplay(form.numeroCuotas, cuotasUnidad)}
+                onChange={(e) => setForm((f) => ({ ...f, numeroCuotas: displayToCuotas(e.target.value, cuotasUnidad) }))}
+                required
+                style={{ flex: 1 }}
+              />
+              <select
+                value={cuotasUnidad}
+                onChange={(e) => setCuotasUnidad(e.target.value as UnidadPlazo)}
+                style={{ width: 110, flex: 'none' }}
+                aria-label="Unidad del plazo"
+              >
+                <option value="cuotas">Cuotas</option>
+                <option value="meses">Meses</option>
+                <option value="anios">Años</option>
+              </select>
+            </div>
+            {cuotasUnidad !== 'cuotas' && form.numeroCuotas && (
+              <span className="field-hint">Equivale a {form.numeroCuotas} cuotas.</span>
+            )}
           </div>
           <div className="field">
             <label htmlFor="fecha">{enEjecucion ? 'Fecha de corte del saldo actual' : 'Mes inicio amortización'}</label>
@@ -281,7 +330,17 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
 
         <CollapsibleSection title="Cuota" subtitle={form.valorCuotaManual ? 'Manual' : 'Automática (PMT)'}>
         <div className="field">
-          <label htmlFor="cuotaManual">Valor de la cuota (opcional)</label>
+          <label htmlFor="cuotaManual" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            Valor de la cuota (opcional)
+            <IconButton
+              size="small"
+              onClick={() => setCuotaInfoOpen(true)}
+              aria-label="Cómo se calcula la cuota"
+              sx={{ padding: '2px', color: 'var(--muted)' }}
+            >
+              <InfoOutlinedIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </label>
           <CurrencyInput
             id="cuotaManual"
             value={form.valorCuotaManual}
@@ -295,6 +354,17 @@ export default function LoanForm({ mode }: { mode: 'create' | 'edit' }) {
           </span>
         </div>
         </CollapsibleSection>
+
+        <CuotaInfoDialog
+          open={cuotaInfoOpen}
+          onClose={() => setCuotaInfoOpen(false)}
+          moneda={form.moneda}
+          monto={preview ? Number(form.monto) : undefined}
+          tasaEfectivaAnual={preview?.resumen.tasaEfectivaAnual}
+          tasaMensual={preview?.resumen.tasaMensual}
+          numeroCuotas={preview ? Number(form.numeroCuotas) : undefined}
+          cuotaTeorica={preview?.resumen.valorCuotaTeorica}
+        />
 
         <CollapsibleSection title="Compromiso cuota extraordinaria" subtitle={compromisos.length > 0 ? `${compromisos.length} configurado(s)` : 'Ninguno'}>
         <AbonoBuilder

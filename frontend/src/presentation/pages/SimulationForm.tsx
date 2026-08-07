@@ -6,6 +6,9 @@ import { money, percent, dateEs } from '../format';
 import CurrencyInput from '../components/CurrencyInput';
 import AbonoBuilder from '../components/AbonoBuilder';
 import CollapsibleSection from '../components/CollapsibleSection';
+import CuotaInfoDialog from '../components/CuotaInfoDialog';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { IconButton } from '@mui/material';
 
 export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
   const navigate = useNavigate();
@@ -15,6 +18,7 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
   const [base, setBase] = useState<LoanDetail | null>(null);
   const [nombre, setNombre] = useState('');
   const [valorCuotaManual, setValorCuotaManual] = useState('');
+  const [cuotaInfoOpen, setCuotaInfoOpen] = useState(false);
   const [compromisos, setCompromisos] = useState<AbonoDefinition[]>([]);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -119,7 +123,17 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
 
         <CollapsibleSection title="Cuota (opcional)" subtitle={valorCuotaManual ? 'Personalizada' : 'Igual a la base'} defaultOpen>
         <div className="field">
-          <label htmlFor="cuotaManual">Valor de la cuota para este escenario</label>
+          <label htmlFor="cuotaManual" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            Valor de la cuota para este escenario
+            <IconButton
+              size="small"
+              onClick={() => setCuotaInfoOpen(true)}
+              aria-label="Cómo se calcula la cuota"
+              sx={{ padding: '2px', color: 'var(--muted)' }}
+            >
+              <InfoOutlinedIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </label>
           <CurrencyInput
             id="cuotaManual"
             value={valorCuotaManual}
@@ -132,6 +146,17 @@ export default function SimulationForm({ mode }: { mode: 'create' | 'edit' }) {
           </span>
         </div>
         </CollapsibleSection>
+
+        <CuotaInfoDialog
+          open={cuotaInfoOpen}
+          onClose={() => setCuotaInfoOpen(false)}
+          moneda={moneda}
+          monto={base.resumen.monto}
+          tasaEfectivaAnual={base.resumen.tasaEfectivaAnual}
+          tasaMensual={base.resumen.tasaMensual}
+          numeroCuotas={base.resumen.numeroCuotasSolicitadas}
+          cuotaTeorica={base.resumen.valorCuotaTeorica}
+        />
 
         <CollapsibleSection
           title="Abonos adicionales de esta simulación"

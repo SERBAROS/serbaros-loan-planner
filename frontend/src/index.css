@@ -166,12 +166,15 @@ a {
   justify-content: space-between;
   padding: 0 28px;
   min-width: 0;
+  gap: 12px;
 }
 
 .brand {
   display: flex;
   align-items: baseline;
   gap: 10px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .brand-mark {
@@ -187,6 +190,9 @@ a {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-sub {
@@ -194,6 +200,9 @@ a {
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .topbar-user {
